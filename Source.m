@@ -85,21 +85,26 @@ classdef Source < handle
             end
         end
         
-%         function plot(this, figureNr, lengthOfStray)
-%             figure(figureNr)
-%             hold on
-%             axis equal
-%             for i = 1:this.num_rays
-%                 if this.num_rays == 1
-%                     tempLine = [this.v0(1,:); this.v0(1,:) + this.v*lengthOfStray];
-%                     plot3(tempLine(:,1),tempLine(:,2),tempLine(:,3),'--r')
-%                 else
-%                     plot3(this.v0(:,1),this.v0(:,2),this.v0(:,3),'r')
-% %                     tempLine = [this.v0(end,:);this.v0(end,:) + this.v*lengthOfStray];
-% %                     plot3(tempLine(:,1),tempLine(:,2),tempLine(:,3),'--r')
-%                 end
-%             end
-%         end
+        function plot(this, figureNr)
+            figure(figureNr)
+            hold on
+            axis equal
+            for i = 1:this.num_rays
+                temp_line = [this.path_x(i,1:this.steps(i))',this.path_y(i,1:this.steps(i))',this.path_z(i,1:this.steps(i))'];
+                plot3(temp_line(:,1),temp_line(:,2),temp_line(:,3),'r')
+            end
+        end
+        function plot_stray(this,figureNr, stray_length)
+            figure(figureNr)
+            hold on
+            axis equal
+            for i = 1:this.num_rays
+                temp_line = zeros(2,3);
+                temp_line(1,:) = [this.path_x(i,this.steps(i))',this.path_y(i,this.steps(i))',this.path_z(i,this.steps(i))'];
+                temp_line(2,:) = temp_line(1,:) + this.v(i,:).*stray_length;
+                plot3(temp_line(:,1),temp_line(:,2),temp_line(:,3),'r--')
+            end
+        end
         
     end
 end

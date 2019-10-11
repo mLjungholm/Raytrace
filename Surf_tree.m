@@ -11,6 +11,7 @@ classdef Surf_tree < handle
 
     properties
         octree_properties;
+        surf_nums;
         
         points;
         point_surf_index;
@@ -32,7 +33,7 @@ classdef Surf_tree < handle
         bin_depths;
         bin_parents;
         bin_childs;
-        bin_capacity = 4;
+        bin_capacity = 3;
         
         bin_triangles;
         temp_tri_face_index;
@@ -41,7 +42,7 @@ classdef Surf_tree < handle
     methods
         function this = Surf_tree(varargin)
             % This is the OcTree header line  
-            
+            this.surf_nums = nargin;
             tmp_p = cell(nargin,1);            %   points
             tmp_psi = cell(nargin,1);          %   point_surf_index
             tmp_spc = zeros(nargin,1,'uint16');%   surface_point_count
@@ -94,6 +95,7 @@ classdef Surf_tree < handle
             this.mk_childs;
             this.bin_parents = uint16(this.bin_parents);
             this.mk_tri_bin;
+%             this.big_bin;
             
         end
         
@@ -288,6 +290,17 @@ classdef Surf_tree < handle
                 h(i) = plot3(pts(:,1),pts(:,2),pts(:,3),varargin{:});
             end
         end
+        function plot_surface(this,surface)
+            n = surface;
+            if isequal(surface,'all')
+                n = 1:this.surf_nums;
+            end
+            for i = 1:size(n,2)
+%                 rind = find(this.face_surf_index == i);
+                tf = this.faces(this.face_surf_index == n(i),:);
+                trisurf(tf,this.points(:,1),this.points(:,2),this.points(:,3),'Facecolor','b','FaceAlpha',0.1,'EdgeAlpha',0.3)
+            end
+        end
         function h = plot3(this,varargin)
             % OcTree.plot plots bin bounding boxes of an OcTree
             %
@@ -320,7 +333,10 @@ classdef Surf_tree < handle
         
         function mk_tri_bin(this)
             this.temp_tri_face_index = cell2mat(arrayfun(@this.find_tri_bins,this.faces(:,1),this.faces(:,2),this.faces(:,3),'UniformOutput',false));
+%             ttemp = arrayfun(@this.match_bin_with_tri,1:this.bin_count,'UniformOutput',false);
             this.bin_triangles = cell2mat(arrayfun(@this.match_bin_with_tri,1:this.bin_count,'UniformOutput',false));
+            
+%             this.bin_triangles = cell2mat(ttemp);
             this.temp_tri_face_index = [];
         end
         
@@ -396,7 +412,7 @@ classdef Surf_tree < handle
         end
         function tri_list = match_bin_with_tri(this,bin_index)
             [row,~] = find(this.temp_tri_face_index == bin_index);
-            tri_list = uint16(zeros(10,1));
+            tri_list = uint16(zeros(20,1));
             if ~isempty(row)
                 tri_list(1:size(row,1)) = row;
             end

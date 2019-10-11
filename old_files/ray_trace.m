@@ -18,7 +18,7 @@ while nnz(source.ray_alive)
     arrayfun(@trace_ray,1:source.num_rays);
     ray_step = ray_step + 1;
 end
-% test = 1;
+
 
     function trace_ray(ray_index)
         if ~source.ray_alive(ray_index)
@@ -90,6 +90,7 @@ end
                         source.path_x(ray_index,ray_step+1) = iP(1);
                         source.path_y(ray_index,ray_step+1) = iP(2);
                         source.path_z(ray_index,ray_step+1) = iP(3);
+                        source.steps(ray_index) = source.steps(ray_index) + 1;
                         if isequal(intersect_flag, 'blocked')
                             source.ray_alive(ray_index) = 0;
                             source.status(ray_index) = 'Ray ended';
