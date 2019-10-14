@@ -37,6 +37,8 @@ classdef Surf_tree < handle
         
         bin_triangles;
         temp_tri_face_index;
+        
+        refract_order;
     end
     
     methods
@@ -412,7 +414,7 @@ classdef Surf_tree < handle
         end
         function tri_list = match_bin_with_tri(this,bin_index)
             [row,~] = find(this.temp_tri_face_index == bin_index);
-            tri_list = uint16(zeros(20,1));
+            tri_list = uint16(zeros(30,1));
             if ~isempty(row)
                 tri_list(1:size(row,1)) = row;
             end

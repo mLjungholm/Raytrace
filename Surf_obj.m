@@ -87,7 +87,7 @@ classdef Surf_obj < handle
             trisurf(faces,this.v(:,1),this.v(:,2),this.v(:,3),'Facecolor','b','FaceAlpha',0.1,'EdgeAlpha',0.3)
         end
         
-        function RotSurf(this, xyz, point, angle)
+        function rotate(this, xyz, point, angle)
             % Function that rotates the surface around an axis and point in
             % space. 
             if xyz == 'x'
