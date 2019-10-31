@@ -1,4 +1,4 @@
-classdef SurfOcTree < handle
+classdef OcTree < handle
 %   Space partition object for acellerated ray tracing. Object takes in
 %   points and triangle faces from sufaces and subpartition space fot them.
     
@@ -30,20 +30,12 @@ classdef SurfOcTree < handle
     end
     
     methods
-        function this = OcTree(type, varargin)
+        function this = OcTree(varargin)
             % This is the OcTree header line
 %             validateattributes(pts,{'numeric'},...
 %                 {'real','finite','nonnan','ncols', 3},...
 %                 mfilename,'PTS')
-            switch type
-                case 'surface'
-                    
-                case 'abs_volume'
-                    
-                otherwise
-                    fprintf(strcat('ERROR:',string(type),' is not an accepted type. \n'))
-                    return;
-            end
+
             % Allow custom setting of Properties
             
             

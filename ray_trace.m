@@ -21,16 +21,16 @@ arrayfun(@trace_ray,1:source.num_rays);
         triangle_intersect_bin = 0;
         
         outside = 0;
-        if source.v0(ray_index,1) < volume.bin_boundaries(1,1) || source.v0(ray_index,1) < volume.bin_boundaries(1,4)
+        if source.v0(ray_index,1) < volume.bin_boundaries(1,1) || source.v0(ray_index,1) > volume.bin_boundaries(1,4)
             outside = 1;
-        elseif source.v0(ray_index,2) < volume.bin_boundaries(1,2) || source.v0(ray_index,1) < volume.bin_boundaries(1,5)
+        elseif source.v0(ray_index,2) < volume.bin_boundaries(1,2) || source.v0(ray_index,2) > volume.bin_boundaries(1,5)
             outside = 1;
-        elseif source.v0(ray_index,3) < volume.bin_boundaries(1,3) || source.v0(ray_index,1) < volume.bin_boundaries(1,6)
+        elseif source.v0(ray_index,3) < volume.bin_boundaries(1,3) || source.v0(ray_index,3) > volume.bin_boundaries(1,6)
             outside = 1;
         else
             % find start bin
             current_bin = volume.query(v0);
-            bin_depth = volume.bin_depth(current_bin);
+            bin_depth = volume.bin_depths(current_bin);
 %             [tmin, ~] = rayBoxGPU(volume.bin_boundaries(current_bin,:),v0,v);
             bIP = v0;
         end

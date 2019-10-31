@@ -208,7 +208,7 @@ classdef Surf_tree < handle
             % (containing all other bins in OT) has DEPTH = 1.
 
             if nargin<3
-                queryDepth = max(this.BinDepths);
+                queryDepth = max(this.bin_depths);
             end
             
             numPts = size(newPts,1);
