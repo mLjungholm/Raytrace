@@ -21,9 +21,21 @@
 % scatter3(points(p_ind,1),points(p_ind,2),points(p_ind,3),'r')
 
 
-minP = min([mP;oP],[],1);
-maxP = max([mP;oP],[],1);
-[x,y,z] = meshgrid(minP(1):20:maxP(1),minP(2):20:maxP(2),minP(3):20:maxP(3));
+
+% minP = min([mP;oP],[],1);
+% maxP = max([mP;oP],[],1);
+minP = [-1 -1 -1];
+maxP = [1 1 1];
+step = 0.3;
+
+
+
+[x,y,z] = create_grid(minP, maxP, step);
 points = [reshape(x,[],1),reshape(y,[],1),reshape(z,[],1)];
 points = single(points);
 
+
+
+function [x,y,z] = create_grid(minP, maxP, step_size)
+[x,y,z] = meshgrid(minP(1):step_size:maxP(1),minP(2):step_size:maxP(2),minP(3):step_size:maxP(3));
+end
