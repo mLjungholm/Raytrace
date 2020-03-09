@@ -20,7 +20,7 @@ function voxel_trace(ray_ind)
         return;
     end
         
-    start = source.
+    start = [source.path_x(ray_ind,source.steps(ray_ind-1)),source.path_y(ray_ind,source.steps(ray_ind-1)),source.path_z(ray_ind,source.steps(ray_ind-1))];
     % Determine if ray starts outside or inside the voxel grid
     if start(1) < boundingBox(1) || start(1) > boundingBox(4)
         outside = 1;
@@ -114,7 +114,7 @@ function voxel_trace(ray_ind)
             In = exp(-step*abs_coeff);
             absVal = I - In;
             I = In;
-            receptors(nonzeros(receptors_inds(point_inds(x,y,z),:))) = receptors(nonzeros(receptors_inds(point_inds(x,y,z),:))) + absVal;
+%             absorption_values(nonzeros(receptors_inds(point_inds(x,y,z),:))) = absorption_values(nonzeros(receptors_inds(point_inds(x,y,z),:))) + absVal;
             step = step + 1;
         end
         

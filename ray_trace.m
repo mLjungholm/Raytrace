@@ -16,7 +16,8 @@ arrayfun(@trace_ray,1:source.num_rays);
     % Main ray trace for each ray
     function trace_ray(ray_index)
         % Start values for the ray.
-        v0 = [source.path_x(ray_index), source.path_y(ray_index), source.path_z(ray_index)];
+        current_step = source.steps(ray_index);
+        v0 = [source.path_x(ray_index,current_step), source.path_y(ray_index,current_step), source.path_z(ray_index,current_step)];
         v = source.v(ray_index,:);
         triangle_intersect_bin = 0;
         
@@ -188,8 +189,8 @@ arrayfun(@trace_ray,1:source.num_rays);
             if intersection == 1
                 if volume.face_surf_index(volume.bin_triangles(triNum,current_bin)) == volume.refract_order(source.steps(ray_index))
                     if volume.surface_blocking(source.steps(ray_index)) == 0
-                        [vNew, ~] = Snell(v, triN, source.r_index(ray_index), volume.surf_refract_index(source.steps(ray_index)));
-                        source.r_index(ray_index) = volume.surf_refract_index(source.steps(ray_index));
+                        [vNew, ~] = Snell(v, triN, source.refract_index(ray_index), volume.surf_refract_index(source.steps(ray_index)));
+                        source.refract_index(ray_index) = volume.surf_refract_index(source.steps(ray_index));
                         intersect_flag = 'refract';
                     else
                         intersect_flag = 'blocked';

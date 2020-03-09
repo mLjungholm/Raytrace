@@ -18,20 +18,20 @@ classdef Source < handle
         v0;         % (nx3xm) path of ray. m = number of stepps. sett to a hig number to avoid reconstructing matrix
         steps;      % (nxm) number of steps taken. starts att 1
         absorption  % (nx3xm) m = number of steps.
-        r_index;    % current refractive index of each ray.
+        refract_index;    % current refractive index of each ray.
         status;
         ray_alive;
     end
     
     methods
-        function this = Source(dir, origin, hsize, raysPerAxis, r_index)
+        function this = Source(dir, origin, hsize, raysPerAxis, refract_index)
             this.source_dir = dir./norm(dir);
             this.origin = origin;
             if raysPerAxis == 1
                 this.num_rays = 1;
                 this.v = this.source_dir;
                 this.v0 = origin;
-                this.r_index = r_index;
+                this.refract_index = refract_index;
             else
                 dir = dir./norm(dir);
                 if dir(2) == 0 && dir(3) == 0
@@ -61,14 +61,14 @@ classdef Source < handle
                 this.num_rays = size(tP,1);
                 [this.v, this.v0] = deal(zeros(this.num_rays,3));
                 [this.path_x, this.path_y, this.path_z] = deal(zeros(this.num_rays,10));
-%                 this.r_index = ones(this.num_rays,1);
+%                 this.refract_index = ones(this.num_rays,1);
                 this.status = strings(this.num_rays,1);
                 this.ray_alive = ones(this.num_rays,1);
                 this.steps = ones(this.num_rays,1);
                 for i = 1:this.num_rays
                     this.v(i,:) = dir;
                     this.v0(i,:) = tP(i,:);
-                    this.r_index(i) = r_index;
+                    this.refract_index(i) = refract_index;
                     this.path_x(i) = tP(i,1);
                     this.path_y(i) = tP(i,2);
                     this.path_z(i) = tP(i,3);
