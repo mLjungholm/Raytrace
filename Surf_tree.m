@@ -334,6 +334,7 @@ classdef Surf_tree < handle
         end
         
         function mk_tri_bin(this)
+%             tempvar = arrayfun(@this.find_tri_bins,this.faces(:,1),this.faces(:,2),this.faces(:,3),'UniformOutput',false);
             this.temp_tri_face_index = cell2mat(arrayfun(@this.find_tri_bins,this.faces(:,1),this.faces(:,2),this.faces(:,3),'UniformOutput',false));
 %             ttemp = arrayfun(@this.match_bin_with_tri,1:this.bin_count,'UniformOutput',false);
             this.bin_triangles = cell2mat(arrayfun(@this.match_bin_with_tri,1:this.bin_count,'UniformOutput',false));
@@ -409,7 +410,7 @@ classdef Surf_tree < handle
             end
 %             pad_list = uint16(zeros(10,1));
             temp_list = find(found_list);
-            found_list = uint16(zeros(1,10));
+            found_list = uint16(zeros(1,30));
             found_list(1:size(temp_list,2)) = temp_list;
         end
         function tri_list = match_bin_with_tri(this,bin_index)

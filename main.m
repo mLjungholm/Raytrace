@@ -3,13 +3,11 @@ addpath(genpath(pwd))
 close all
 clc
 
-
 folder_name = uigetdir('','Select save folder');
 mkdir(folder_name,'tracedRays');
 mkdir(folder_name,'absorbedRays');
 
 [pc,d_theta,d_phi] = sphere_points_2d_angular(4.535,150, 1 ,0);
-
 
 f = waitbar(0,'1','Name','Tracing rays...',...
     'CreateCancelBtn','setappdata(gcbf,''canceling'',1)');
