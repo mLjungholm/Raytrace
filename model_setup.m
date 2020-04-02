@@ -13,6 +13,13 @@
 % using the built in funtions of the Surf_obj. Check Surf_obj documentation
 % for further information on utility funtions.
 
+%                               ! Note !
+%       Here it is importaint to think about where the light source is
+%       supposed to originate from. Matlab math conversions makes the x 
+%       axis most suitable for the purpose of main propagation axis. 
+%       Traditionaly in optics the z axis is ususaly chosen as the main 
+%       propagation axis. This might however cause problems in the code.
+
 %------------------------------------------------------------------------
 
 % Step 3. Create surface partition. Use the Surf_tree object to partition
@@ -59,6 +66,16 @@
 % Example
 % ------------------------------------------------------------
 % cornia_surface.plot(1,'r')
+% lens_surface.plot(1,'b')
+% retina_surface.plot(1,'g')
+
+% cornia_surface.rotate('x', [0 0 0], 90) % 90 degree rotation around the x axis at position [0 0 0]
+% lens_surface.rotate('x', [0 0 0], 90)
+% retina_surface.rotate('x', [0 0 0], 90)
+% 
+% cornia_surface.plot(1,'r')
+% lens_surface.plot(1,'b')
+% retina_surface.plot(1,'g')
 % ------------------------------------------------------------
 
 %% Step 3. Create the surface partition

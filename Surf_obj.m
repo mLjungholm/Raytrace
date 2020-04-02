@@ -60,7 +60,7 @@ classdef Surf_obj < handle
         end
         function plot(this,figureNr,color)
             figure(figureNr)
-%             hold on
+            hold on
             axis equal
             trisurf(this.f,this.v(:,1),this.v(:,2),this.v(:,3),'Facecolor',color,'FaceAlpha',0.1,'EdgeAlpha',0.3)
             axis equal
