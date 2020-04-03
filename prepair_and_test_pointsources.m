@@ -49,8 +49,10 @@
 
 %-------------------------------------------------------------------------
 % Example
-dir = [0 0 1]; % Source direction in positive z-axis.
-origin = [0 0 -20]; % Origin of source.
+% dir = [0 0 1]; % Source direction in positive z-axis.
+dir = [-0.694441226207237,0.633066824990283,0.342020143325669];
+% origin = [0 0 -20]; % Origin of source.
+origin = [20.833236786217114,-18.992004749708500,-10.260604299770055];
 % hsize = Radius of the source. make it big enough to encompass the entire 
 % aperature but not unessesarily big which will result in unessesary 
 % computations
@@ -64,4 +66,43 @@ lens_surface.plot(1,'b')
 retina_surface.plot(1,'g')
 test_source.plot_grid(1) % Plots the initial points for all rays.
 
-%% Step 4
+
+%%
+ray_trace(test_source,surf_tree); % Ray tracing the test source
+
+cornia_surface.plot(1,'r')
+lens_surface.plot(1,'b')
+retina_surface.plot(1,'g')
+test_source.plot(1) % Plots the initial points for all rays.
+
+
+%% Step 4 Create point source list
+
+% This function creates a shericlaly distributed set of points separated by
+% an angle "ang" with radius "radius". "half_sphere determines if only a
+% half sphere is needed and "plot_points" is a plotting flag. The retun
+% points are in carteesian coordinates in the output variable "pc". d_theta
+% and d_phi is the resulted angular separation in horizontal and vertical
+% direction.
+ang = 20;
+radius = 30;
+half_sphere = 0;
+plot_points = 1;
+[pc,d_theta,d_phi] = sphere_points_2d_angular(ang, radius, half_sphere ,plot_points);
+
+cornia_surface.plot(1,'r')
+lens_surface.plot(1,'b')
+retina_surface.plot(1,'g')
+
+%%
+% An easy way to sort only the needed points are for instance to create a
+% new "pc" varable and specify only the points that satisfy z < 0.
+
+cornia_surface.plot(1,'r')
+lens_surface.plot(1,'b')
+retina_surface.plot(1,'g')
+
+pc = pc(pc(:,3) < 0,:);
+figure(1)
+scatter3(pc(:,1),pc(:,2),pc(:,3),'.')
+axis equal

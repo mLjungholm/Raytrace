@@ -15,6 +15,9 @@ arrayfun(@trace_ray,1:source.num_rays);
 
     % Main ray trace for each ray
     function trace_ray(ray_index)
+%         if ray_index == 75
+%             disp("test")
+%         end
         % Start values for the ray.
         current_step = source.steps(ray_index);
         v0 = [source.path_x(ray_index,current_step), source.path_y(ray_index,current_step), source.path_z(ray_index,current_step)];
@@ -31,9 +34,10 @@ arrayfun(@trace_ray,1:source.num_rays);
         else
             % find start bin
             current_bin = volume.query(v0);
-            bin_depth = volume.bin_depths(current_bin);
+            bin_depth = volume.bin_depths(current_bin);            
 %             [tmin, ~] = rayBoxGPU(volume.bin_boundaries(current_bin,:),v0,v);
             bIP = v0;
+            current_oc_index = determine_oc_index();
         end
         
         if outside
@@ -130,9 +134,7 @@ arrayfun(@trace_ray,1:source.num_rays);
             end
         end
         
-        function next_bin = find_lower_bin()
-            % Uses current intersection point with the local logical indices to
-            % determine the next lower bin.
+        function current_oc_index = determine_oc_index() 
             xm = 1;
             ym = 1;
             zm = 2;
@@ -150,6 +152,11 @@ arrayfun(@trace_ray,1:source.num_rays);
             end
             % octreeIndex [z,x,y]
             current_oc_index = oc_index(zm,xm,ym);
+        end
+        function next_bin = find_lower_bin()
+            % Uses current intersection point with the local logical indices to
+            % determine the next lower bin.
+            current_oc_index = determine_oc_index();
             next_bin = volume.bin_childs(current_oc_index,current_bin);
         end
         
@@ -232,7 +239,11 @@ arrayfun(@trace_ray,1:source.num_rays);
                 tz = (volume.bin_boundaries(current_bin,3)-bIP(3))/v(3);
             end
             [t, I] = min([tx,ty,tz]);
+            try
             nextInd = orientation_matrix(current_oc_index,I+d(I));
+            catch
+                disp(strcat("ERROR: current_oc_index not defined in ray", string(ray_index)));
+            end
             %         [nexOcInd, oob] = Orientation();
             nextP = bIP + v*t;
         end
