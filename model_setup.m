@@ -69,9 +69,9 @@
 % lens_surface.plot(1,'b')
 % retina_surface.plot(1,'g')
 
-% cornia_surface.rotate('x', [0 0 0], 90) % 90 degree rotation around the x axis at position [0 0 0]
-% lens_surface.rotate('x', [0 0 0], 90)
-% retina_surface.rotate('x', [0 0 0], 90)
+% cornia_surface.rotate('x', [0 0 0], 180) % 90 degree rotation around the x axis at position [0 0 0]
+% lens_surface.rotate('x', [0 0 0], 180)
+% retina_surface.rotate('x', [0 0 0], 180)
 % 
 % cornia_surface.plot(1,'r')
 % lens_surface.plot(1,'b')

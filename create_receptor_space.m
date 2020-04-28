@@ -1,5 +1,8 @@
 % script for creating the points used in the receptor_tree
 
+% Note! 
+%   Function for creating cones is missing
+
 % Step 1. Create the receptor shapes -> make lists of variables defining
 % the space
 
