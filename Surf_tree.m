@@ -302,6 +302,14 @@ classdef Surf_tree < handle
                 tf = this.faces(this.face_surf_index == n(i),:);
                 trisurf(tf,this.points(:,1),this.points(:,2),this.points(:,3),'Facecolor','b','FaceAlpha',0.1,'EdgeAlpha',0.3)
             end
+        end     
+        function plot_tri(this,tri_list)
+            tf = this.faces(tri_list,:);
+            %             for i = 1:size(n,2)
+            %                 rind = find(this.face_surf_index == i);
+            %                 tf = this.faces(this.face_surf_index == n(i),:);
+            trisurf(tf,this.points(:,1),this.points(:,2),this.points(:,3),'Facecolor','r','FaceAlpha',0.1,'EdgeAlpha',0.3)
+            %             end
         end
         function h = plot3(this,varargin)
             % OcTree.plot plots bin bounding boxes of an OcTree

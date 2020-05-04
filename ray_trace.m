@@ -3,12 +3,18 @@ function ray_trace(source, volume)
 orientation_matrix = [0 0 0 5 3 2; 0 0 1 6 4 0; 0 1 0 7 0 4;...
     0 2 3 8 0 0; 1 0 0 0 7 6; 2 0 5 0 8 0; 3 5 0 0 0 8;...
     4 6 7 0 0 0];
+% orientation_matrix = [0 0 0 2 5 3; 1 0 0 0 6 4; 0 0 1 4 7 0;...
+%     1 0 2 0 8 0; 0 1 0 6 0 7; 5 2 0 0 0 8; 0 3 5 8 0 0;...
+%     7 4 6 0 0 0];
+
 
 % Max step value in case of errors
 max_step = 5;
 
 oc_index = [2 6; 1 5];
 oc_index(:,:,2) = [4 8; 3 7];
+% oc_index = [1 5; 2 6];
+% oc_index(:,:,2) = [3 7; 4 8];
 
 % Run the ray-trace in paralell
 arrayfun(@trace_ray,1:source.num_rays);
@@ -37,7 +43,12 @@ arrayfun(@trace_ray,1:source.num_rays);
             bin_depth = volume.bin_depths(current_bin);            
 %             [tmin, ~] = rayBoxGPU(volume.bin_boundaries(current_bin,:),v0,v);
             bIP = v0;
-            current_oc_index = determine_oc_index();
+            if volume.bin_childs(1,current_bin) == 0
+                temp_ind = current_bin;
+                current_bin = volume.bin_parents(current_bin);
+                current_oc_index = determine_oc_index();
+                current_bin = temp_ind;
+            end
         end
         
         if outside
@@ -124,7 +135,7 @@ arrayfun(@trace_ray,1:source.num_rays);
             if volume.bin_childs(1,current_bin) ~= 0
                 flag = 1;
             elseif volume.bin_triangles(1,current_bin) ~= 0
-                if triangle_intersect_bin == current_bin
+                if triangle_intersect_bin == current_bin % Checks if the the last intesected triangle "triangle_intesect_bin" is in the same bin as current.
                     flag = 3;
                 else
                     flag = 2;
@@ -148,11 +159,29 @@ arrayfun(@trace_ray,1:source.num_rays);
                 ym = 2;
             end
             if (bIP(3)-zh) > volume.bin_boundaries(current_bin,3)
-                zm = 1;
+                zm = 1; 
             end
-            % octreeIndex [z,x,y]
             current_oc_index = oc_index(zm,xm,ym);
         end
+%         function current_oc_index = determine_oc_index() 
+%             xm = 1;
+%             ym = 1;
+%             zm = 1; % was 2
+%             xh = (volume.bin_boundaries(current_bin,4)-volume.bin_boundaries(current_bin,1))/2;
+%             yh = (volume.bin_boundaries(current_bin,5)-volume.bin_boundaries(current_bin,2))/2;
+%             zh = (volume.bin_boundaries(current_bin,6)-volume.bin_boundaries(current_bin,3))/2;
+%             if (bIP(1)-xh) > volume.bin_boundaries(current_bin,1)
+%                 xm = 2;
+%             end
+%             if (bIP(2)-yh) > volume.bin_boundaries(current_bin,2)
+%                 ym = 2;
+%             end
+%             if (bIP(3)-zh) > volume.bin_boundaries(current_bin,3)
+%                 zm = 2; % Was 1
+%             end
+%             % octreeIndex [z,x,y]
+%             current_oc_index = oc_index(xm,ym,zm); % was (zm,xm,ym);
+%         end
         function next_bin = find_lower_bin()
             % Uses current intersection point with the local logical indices to
             % determine the next lower bin.
