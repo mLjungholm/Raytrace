@@ -20,7 +20,7 @@
 %% Generate gridpoints 
 minP = min([mP;oP],[],1);
 maxP = max([mP;oP],[],1);
-[x,y,z] = meshgrid(minP(1):20:maxP(1),minP(2):20:maxP(2),minP(3):20:maxP(3));
+[x,y,z] = meshgrid(minP(1):1:maxP(1),minP(2):1:maxP(2),minP(3):1:maxP(3));
 points = [reshape(x,[],1),reshape(y,[],1),reshape(z,[],1)];
 points = single(points);
 
@@ -38,7 +38,7 @@ for i = 1:size(mP,1)
     h(i) = norm(v);
     cone_dir(i,:) = v./h(i);
     aP(i,:) = (mP(i,:)-2*v);
-    alpha(i) = atand(2/(3*h(i)));
+    alpha(i) = atand(4/(3*h(i)));
     beta(i) = atand(0.7/(3*h(i)));
 end
 
