@@ -48,6 +48,7 @@ function voxel_trace(ray_ind)
     dir = source.v(ray_ind,:);
     
     % If outside then find first intersection point
+    tmin = 0;
     if outside
         [tmin, flag] = rayBoxGPU(boundingBox,start, dir);
         if ~flag
