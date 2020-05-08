@@ -32,25 +32,28 @@
 % key = (oP(:,2) < -15);
 % oP = oP(key,:);
 % oP = oP(oP(:,3) > -5);
+% oP = [oP(60,:);oP(62,:)];
 % S = Source_definedSourceGrid(oP,1,[0,0,0]);
-
-
-% ------------------------------------------------------------------------
-
-% Trace source from back of retina to lens to find the intesection points
-% and extract those.
-
+% 
+% 
+% % ------------------------------------------------------------------------
+% 
+% % Trace source from back of retina to lens to find the intesection points
+% % and extract those.
+% 
 % surf_tree.refract_order = [2,2];
 % surf_tree.surface_blocking = [1,1];
 % ray_trace(S,surf_tree);
-% 
+
 % mP = [S.path_x(:,2),S.path_y(:,2),S.path_z(:,2)];
 
 % ------------------------------------------------------------------------
-
-% retina_surface.plot(1,'g')
+% tri_list [371;1527;518;1522;517;1638;131]
+retina_surface.plot(1,'g')
+surf_tree.plot_bin(507)
+surf_tree.plot_tri([371;1527;518;1522;517;1638;131])
 % lens_surface.plot(1,'b')
-% S.plot(1)
-% xlabel('X')
-% ylabel('Y')
-% zlabel('Z')
+S.plot_stray(1,10)
+xlabel('X')
+ylabel('Y')
+zlabel('Z')

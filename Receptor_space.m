@@ -5,6 +5,12 @@
 %                           !Note!
 %           For now this only works with cone shaped receptors
 
+% Input variables:
+%       Alt1: (Origin_points/base_points, end_points, 
+%             [base_diameter, secondary diameter])
+
+
+
 classdef Receptor_space < handle
     
     properties
@@ -26,13 +32,15 @@ classdef Receptor_space < handle
         base_sec            % Base diameter of the seconday cone
         alpha               % Apperature angle for the main cone
         beta                % Apperature angle for the secondary cone
-    end
+        unmatched_receptors
+    end    
     
     methods
         function this = Receptor_space(varargin)
             % Header line for Receptor space
-            switch varargin{1}
-                case ndim(varargin{1}) == 2 && size(varargin{1},2) == 3
+            indim = ndims(varargin{1});
+            switch indim
+                case 2 % && size(varargin{1},2) == 3
                     % origin receptor points
                     if size(varargin{2}) ~= size(varargin{1})
                         error('Second input(end positions) must be the same size as the first input(start position)')
@@ -52,7 +60,8 @@ classdef Receptor_space < handle
                     this.alpha = single(zeros(this.receptor_nums,1));
                     this.beta = single(zeros(this.receptor_nums,1));
                 otherwise
-                    error('Unsuported input type')
+                    errmsg = strcat('Unsuported input type : ', num2str(indim));
+                    error(errmsg)
             end
         end
             
@@ -61,24 +70,24 @@ classdef Receptor_space < handle
         function allocate_space(this, volume_resolution)
             this.volume_resolution = volume_resolution;
             this.step_size = (this.box_max-this.box_min)./(volume_resolution-1);            
-            this.x_grid = minP(1):stepS(1):maxP(1);
-            this.y_grid = minP(2):stepS(2):maxP(2);
-            this.z_grid = minP(3):stepS(3):maxP(3);            
+            this.x_grid = this.box_min(1):this.step_size(1):this.box_max(1);
+            this.y_grid = this.box_min(2):this.step_size(2):this.box_max(2);
+            this.z_grid = this.box_min(3):this.step_size(3):this.box_max(3);            
             % The cell array is created with the y coordinate fist so that the matrix
             % indexing mathces the physical carteesian coordinate structure.
-            this.receptor_grid = cell(steps(2),steps(1),steps(3)); 
+            this.receptor_grid = cell(volume_resolution(2),volume_resolution(1),volume_resolution(3)); 
         end        
         
         % Fitt all the receptors into the allocated receptor grid.
         function fit_receptors2bins(this)
-            if isnan(this.receptor_grid)
+            if ~isa(this.receptor_grid,'cell')
                 error('Receptor grid has not been allocated')
             end
             cone_dir = single(zeros(this.receptor_nums,3));
             aP = single(zeros(this.receptor_nums,3));
             h = single(zeros(this.receptor_nums,1));
             % Calculate the length, direction and angles of the cones
-            for j = 1:size(this.receptor_nums,1)                
+            for j = 1:size(this.receptor_nums,1)
                 v = this.base_pos(j,:)-this.end_pos(j,:);
                 h(j) = norm(v);
                 cone_dir(j,:) = v./h(j);
@@ -94,6 +103,8 @@ classdef Receptor_space < handle
             % Initiate fitting
             pcount = 1:this.receptor_nums;
             pcount = pcount';
+            % Fitting function for the points and cones
+            this.unmatched_receptors = single(zeros(this.receptor_nums,1));
             
             % Parralell fitt each cone ot all points
             try
@@ -103,35 +114,138 @@ classdef Receptor_space < handle
                 error('unexpected error in fitting')
             end
             delete(hWaitBar);
+            this.unmatched_receptors = this.unmatched_receptors(any(this.unmatched_receptors,2));
             
-            x_nums = this.volume_resolution(1);
-            y_nums = this.volume_resolution(2);
-            z_nums = this.volume_resolution(3);
-            function match = point_cone_fit(p_ind)
-                %                     match = single(zeros(1,100)); % Guessing no more than hundred cones for a point
-                n = 1;
-                for z_ind = 1:z_nums
-                    for y_ind = 1:y_nums
-                        for x_ind = 1:x_nums
-                            l = sqrt((this.x_grid(x_ind)-aP(p_ind,1))^2 + (this.y_grid(y_ind)-aP(p_ind,2))^2 + (this.z_grid(z_ind)-aP(p_ind,3))^2);
+            function point_cone_fit(p_ind)
+                found_any = 0;
+                for z_ind = 1:this.volume_resolution(3)
+                    for y_ind = 1:this.volume_resolution(2)
+                        for x_ind = 1:this.volume_resolution(1)
+                            % calculate the coodinates for the index
+                            % point
+                            point = [this.x_grid(x_ind) this.y_grid(y_ind) this.z_grid(z_ind)];
+                            l = sqrt((point(1)-aP(p_ind,1))^2 + (point(2)-aP(p_ind,2))^2 + (point(3)-aP(p_ind,3))^2);
                             if  l > h(p_ind)*2 && l < h(p_ind)*3
-                                
-                                
-                                
-                                %%% Do this next %%%
-                                pvec = (points(p_ind,:)-cone_ap(x_ind,:))./norm(points(p_ind,:)-cone_ap(x_ind,:));
-                                ang = acosd(pvec(1)*cone_dir(x_ind,1) + pvec(2)*cone_dir(x_ind,2) + pvec(3)*cone_dir(x_ind,3));
-                        %                 if  ang <= beta(i) && ang >= alpha(i)
-                        if  ang <= alpha(x_ind)
-                            match(n) = x_ind;
-                            n = n + 1;
+                                % Vector from cone apex to grid point
+                                pvec = (point-aP(p_ind,:))./norm(point-aP(p_ind,:));
+                                ang = acosd(pvec(1)*cone_dir(p_ind,1) + pvec(2)*cone_dir(p_ind,2) + pvec(3)*cone_dir(p_ind,3));
+                                % Check if the intervector angle is inside
+                                % the cone apex angle.
+                                %  if  ang <= beta(i) && ang >= alpha(i)
+                                if  ang <= this.alpha(p_ind)
+                                    % This changes the size for the vectors
+                                    % in the cell array. It might be slow.
+                                    this.receptor_grid{y_ind,x_ind,z_ind} = [this.receptor_grid{y_ind,x_ind,z_ind} p_ind];
+                                    found_any = 1;
+                                end
+                            end
                         end
                     end
                 end
+                if ~found_any
+                    this.unmatched_receptors(p_ind) = p_ind;
+                end
+                % Uppdate the waitbar
                 numComplete = numComplete + 1;
                 fractionComplete = numComplete / this.receptor_nums;
                 waitbar(fractionComplete, hWaitBar);
             end
         end
+        
+        % Creates a series of control variables
+        function [all_points, not_empty] = check_fit_errors(this)
+            minP = min([this.end_pos;this.base_pos],[],1);
+            maxP = max([this.end_pos;this.base_pos],[],1);
+            [x,y,z] = meshgrid(minP(1):this.step_size(1):maxP(1),minP(2):this.step_size(2):maxP(2),minP(3):this.step_size(3):maxP(3));
+            all_points = [reshape(x,[],1),reshape(y,[],1),reshape(z,[],1)];
+            all_points = single(all_points);
+            
+            not_empty = single(zeros(size(all_points,1),3));
+            i = 1;
+            for z_ind = 1:this.volume_resolution(3)
+                for y_ind = 1:this.volume_resolution(2)
+                    for x_ind = 1:this.volume_resolution(1)
+                        if size(this.receptor_grid{y_ind,x_ind,z_ind},1) ~= 0
+                            not_empty(i,:) = [this.x_grid(x_ind),this.y_grid(y_ind),this.z_grid(z_ind)];
+                            i = i + 1;
+                        end
+                    end
+                end
+            end
+            mapof_empty = ~ismember(not_empty,[0 0 0],'rows');
+            not_empty = not_empty(mapof_empty,:);
+        end
+        
+        
+        function plot(this, varargin)
+        % Inputs: plot(receptors, type, figureNr)
+        %         1: List of receptor indices or 'all'
+        %         2: type of plot. 'line', 'base' or 'end'
+        %         3: FigureNr
+            switch varargin{2}
+                case 'base'
+                    if isequal(varargin{1}, 'all')
+                        figure(varargin{3})
+                        axis equal
+                        scatter3(this.base_pos(:,1),this.base_pos(:,2),this.base_pos(:,3),'r.')
+                    elseif ismatrix(varargin{1})                        
+                        figure(varargin{3})
+                        axis equal
+                        scatter3(this.base_pos(varargin{1}',1),this.base_pos(varargin{1}',2),this.base_pos(varargin{1}',3),'r.')
+                    else
+                        error('Receptors must be list of indicies or "all"')
+                    end                    
+                case 'end'
+                    if isequal(varargin{1}, 'all')
+                        figure(varargin{3})
+                        axis equal
+                        scatter3(this.end_pos(:,1),this.end_pos(:,2),this.end_pos(:,3),'r.')
+                    elseif ismatrix(varargin{1})                        
+                        figure(varargin{3})
+                        axis equal
+                        scatter3(this.end_pos(varargin{1}',1),this.end_pos(varargin{1}',2),this.end_pos(varargin{1}',3),'r.')
+                    else
+                        error('Receptors must be list of indicies or "all"')
+                    end
+                case 'line'
+                    if isequal(varargin{1}, 'all')
+                        figure(varargin{3})
+                        axis equal
+                        hold on
+                        for i = 1:this.receptor_nums
+                            l = [this.base_pos(i,:); this.end_pos(i,:)];
+                            plot3(l(:,1),l(:,2),l(:,3),'r')
+                        end
+                    elseif ismatrix(varargin{1})                        
+                        figure(varargin{3})
+                        axis equal
+                        hold on
+                        for i = 1:size(varargin{1},2)
+                            l = [this.base_pos(varargin{1}(i),:); this.end_pos(varargin{1}(i),:)];
+                            plot3(l(:,1),l(:,2),l(:,3),'r')
+                        end
+                    else
+                        error('Receptors must be list of indicies or "all"')
+                    end
+                otherwise
+                    error('Unsupported plot type')
+            end
+        end
+            
+            
+            
+%             if isequal(varargin{1}, 'all')
+%                 % plott all
+%             elseif ismatrix(varargin{1})
+%                 % plot list
+%             else
+%                 error('Unsupported inpput type')
+%             end
+%             
+%             figure(figureNr)
+%             hold on
+%             axis equal
+%             scatter3(this.base_pos(:,1),this.base_pos(:,2),this.base_pos(:,3),'r.')
+        
     end
 end

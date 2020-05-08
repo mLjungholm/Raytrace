@@ -4,6 +4,9 @@
 % than 10 or if any volume is inhomogenious then this value needs to be
 % increased
 
+% Found an issue where an extra surface like the cornia can block the rays
+% between two ther surfaces (like retina and lens)
+
 classdef Source_definedSourceGrid < handle
     properties
         
@@ -67,6 +70,15 @@ classdef Source_definedSourceGrid < handle
                 temp_line(1,:) = [this.path_x(i,this.steps(i))',this.path_y(i,this.steps(i))',this.path_z(i,this.steps(i))'];
                 temp_line(2,:) = temp_line(1,:) + this.v(i,:).*stray_length;
                 plot3(temp_line(:,1),temp_line(:,2),temp_line(:,3),'r--')
+            end
+        end
+        
+        function end_points = export_endpoints(this)
+            end_points = zeros(this.num_rays,3);
+            for i = 1:this.num_rays
+                if ~this.steps(i) == 0
+                    end_points(i,:) = [this.path_x(i,this.steps(i)),this.path_y(i,this.steps(i)),this.path_z(i,this.steps(i))];
+                end
             end
         end
         
