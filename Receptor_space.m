@@ -28,11 +28,12 @@ classdef Receptor_space < handle
         x_grid              % X coordinates for the voxel centers
         y_grid              % Y coordinates for the voxel centers
         z_grid              % Z coordinates for the voxel centers
-        base_main           % Base diameter of the main cone
-        base_sec            % Base diameter of the seconday cone
+        base_main           % Base radius of the main cone
+        base_sec            % Base radius of the seconday cone
         alpha               % Apperature angle for the main cone
         beta                % Apperature angle for the secondary cone
         unmatched_receptors
+        receptor_points     % Cell array with all points cointained withen each receptor (temporary test variable)
     end    
     
     methods
@@ -83,17 +84,18 @@ classdef Receptor_space < handle
             if ~isa(this.receptor_grid,'cell')
                 error('Receptor grid has not been allocated')
             end
+            this.receptor_points = cell(this.receptor_nums,1); % temporary variable
             cone_dir = single(zeros(this.receptor_nums,3));
             aP = single(zeros(this.receptor_nums,3));
             h = single(zeros(this.receptor_nums,1));
             % Calculate the length, direction and angles of the cones
-            for j = 1:size(this.receptor_nums,1)
+            for j = 1:this.receptor_nums
                 v = this.base_pos(j,:)-this.end_pos(j,:);
                 h(j) = norm(v);
                 cone_dir(j,:) = v./h(j);
-                aP(j,:) = (this.end_pos(j,:)-2*v);
-                this.alpha(j) = atand(4/(3*h(j)));
-                this.beta(j) = atand(0.7/(3*h(j)));
+                aP(j,:) = (this.end_pos(j,:)-v);
+                this.alpha(j) = atand(this.base_main/(2*h(j)));
+                this.beta(j) = atand(this.base_sec/(2*h(j)));
             end
             
             hWaitBar = waitbar(0, 'Fitting retina Volume', 'CreateCancelBtn', ...
@@ -125,7 +127,7 @@ classdef Receptor_space < handle
                             % point
                             point = [this.x_grid(x_ind) this.y_grid(y_ind) this.z_grid(z_ind)];
                             l = sqrt((point(1)-aP(p_ind,1))^2 + (point(2)-aP(p_ind,2))^2 + (point(3)-aP(p_ind,3))^2);
-                            if  l > h(p_ind)*2 && l < h(p_ind)*3
+                            if  l > h(p_ind) && l < h(p_ind)*2
                                 % Vector from cone apex to grid point
                                 pvec = (point-aP(p_ind,:))./norm(point-aP(p_ind,:));
                                 ang = acosd(pvec(1)*cone_dir(p_ind,1) + pvec(2)*cone_dir(p_ind,2) + pvec(3)*cone_dir(p_ind,3));
@@ -135,7 +137,8 @@ classdef Receptor_space < handle
                                 if  ang <= this.alpha(p_ind)
                                     % This changes the size for the vectors
                                     % in the cell array. It might be slow.
-                                    this.receptor_grid{y_ind,x_ind,z_ind} = [this.receptor_grid{y_ind,x_ind,z_ind} p_ind];
+                                    this.receptor_points{p_ind} = [this.receptor_points{p_ind}; point]; 
+                                    this.receptor_grid{end-y_ind+1,x_ind,z_ind} = [this.receptor_grid{end-y_ind+1,x_ind,z_ind} p_ind];
                                     found_any = 1;
                                 end
                             end
@@ -153,7 +156,7 @@ classdef Receptor_space < handle
         end
         
         % Creates a series of control variables
-        function [all_points, not_empty] = check_fit_errors(this)
+        function [all_points, not_empty, empty_points] = check_fit_errors(this)
             minP = min([this.end_pos;this.base_pos],[],1);
             maxP = max([this.end_pos;this.base_pos],[],1);
             [x,y,z] = meshgrid(minP(1):this.step_size(1):maxP(1),minP(2):this.step_size(2):maxP(2),minP(3):this.step_size(3):maxP(3));
@@ -165,7 +168,7 @@ classdef Receptor_space < handle
             for z_ind = 1:this.volume_resolution(3)
                 for y_ind = 1:this.volume_resolution(2)
                     for x_ind = 1:this.volume_resolution(1)
-                        if size(this.receptor_grid{y_ind,x_ind,z_ind},1) ~= 0
+                        if size(this.receptor_grid{end-y_ind+1,x_ind,z_ind},1) ~= 0
                             not_empty(i,:) = [this.x_grid(x_ind),this.y_grid(y_ind),this.z_grid(z_ind)];
                             i = i + 1;
                         end
@@ -174,8 +177,49 @@ classdef Receptor_space < handle
             end
             mapof_empty = ~ismember(not_empty,[0 0 0],'rows');
             not_empty = not_empty(mapof_empty,:);
+            empty_map = ~ismember(all_points,not_empty,'rows');
+            empty_points = all_points(empty_map,:);
         end
         
+        function plot_cone(this,conenr,figurenr,color)
+            figure(figurenr)
+            hold on
+            if size(conenr,2) > 1
+                for i = 1:size(conenr,2)
+                    plot_cone(this.base_pos(conenr(i),:),this.end_pos(conenr(i),:),this.base_main, figurenr,color)
+                end
+            else
+                plot_cone(this.base_pos(conenr,:),this.end_pos(conenr,:),this.base_main, figurenr,color)
+            end
+            axis equal
+        end
+        
+        function plot_conePoints(this,conenr,figurenr)
+            % Guess max points
+            found_points = zeros(this.volume_resolution(1)*this.volume_resolution(2)*this.volume_resolution(3)*0.1,3);
+            i = 1;
+            for zi = 1:this.volume_resolution(3)
+                for yi = 1:this.volume_resolution(2)
+                    for xi = 1:this.volume_resolution(1)
+                        if ~size(this.receptor_grid{end-yi+1,xi,zi},1) == 0
+                            if any(this.receptor_grid{end-yi+1,xi,zi}(this.receptor_grid{end-yi+1,xi,zi} == conenr))
+                                found_points(i,:) = [this.x_grid(xi),this.y_grid(yi),this.z_grid(zi)];
+                                i = i + 1;
+                            end
+                        end
+                    end
+                end
+            end
+            map = ~ismember(found_points,[0 0 0],'rows');
+            found_points = found_points(map,:);
+            figure(figurenr)
+            scatter3(found_points(:,1),found_points(:,2),found_points(:,3),'.')
+        end
+        
+        function plot_conePoints2(this,conenr,figurenr)
+            figure(figurenr)
+            scatter3(this.receptor_points{conenr}(:,1),this.receptor_points{conenr}(:,2),this.receptor_points{conenr}(:,3),'.')
+        end
         
         function plot(this, varargin)
         % Inputs: plot(receptors, type, figureNr)
