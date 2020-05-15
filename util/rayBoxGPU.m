@@ -61,14 +61,20 @@ Dz = v(3);
 if  Dx >= 0
     tmin = (minx - orx) / Dx;
     tmax = (maxx - orx) / Dx;
+elseif Dx == 0
+    tmin = -inf;
+    tmax = inf;
 else
     tmin = (maxx - orx) / Dx;
     tmax = (minx - orx) / Dx;
 end
 
-if  Dy >= 0
+if  Dy > 0
     tymin = (miny - ory) / Dy;
     tymax = (maxy - ory) / Dy;
+elseif Dy == 0
+    tymin = -inf;
+    tymax = inf;
 else
     tymin = (maxy - ory) / Dy;
     tymax = (miny - ory) / Dy;
@@ -88,9 +94,12 @@ if tymax < tmax
    tmax = tymax;
 end
 
-if  Dz >= 0
+if  Dz > 0
     tzmin = (minz - orz) / Dz;
     tzmax = (maxz - orz) / Dz;
+elseif Dz == 0
+    tzmin = -inf;
+    tzmax = inf;
 else
     tzmin = (maxz - orz) / Dz;
     tzmax = (minz - orz) / Dz;

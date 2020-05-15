@@ -24,21 +24,21 @@ boxSize = [boundingBox(4)-boundingBox(1),boundingBox(5)-boundingBox(2),boundingB
 % Create a zero array for the absorption values of the receptors
 % absorption_values = zeros(receptor_volume.receptor_nums,1);
 
-% hWaitBar = waitbar(0, 'Fitting retina Volume', 'CreateCancelBtn', ...
-%     @(src, event) setappdata(gcbf(), 'Cancelled', true));
-% setappdata(hWaitBar, 'Cancelled', false);
-% numComplete = 0;
+hWaitBar = waitbar(0, 'Calculating absorption', 'CreateCancelBtn', ...
+    @(src, event) setappdata(gcbf(), 'Cancelled', true));
+setappdata(hWaitBar, 'Cancelled', false);
+numComplete = 0;
 
 
-arrayfun(@voxel_trace,1:source.num_rays);
-% try
-%     % Trace the ray absorption for all rays in parallel
-%     arrayfun(@voxel_trace,1:source.num_rays);
-% catch
-%     delete(hWaitBar);
-%     error('unexpected error in absorption calculation')
-% end
-% delete(hWaitBar);
+% arrayfun(@voxel_trace,1:source.num_rays);
+try
+    % Trace the ray absorption for all rays in parallel
+    arrayfun(@voxel_trace,1:source.num_rays);
+catch
+    delete(hWaitBar);
+    error('unexpected error in absorption calculation')
+end
+delete(hWaitBar);
 
 
 
@@ -198,11 +198,11 @@ function voxel_trace(ray_ind)
         %     step = step+1;
     end
     
-    % Uppdate the waitbar
-%                 numComplete = numComplete + 1;
-%                 fractionComplete = numComplete / source.num_rays;
-%                 waitbar(fractionComplete, hWaitBar);
-    % path = path(1:step-1,:);
+%     Uppdate the waitbar
+    numComplete = numComplete + 1;
+    fractionComplete = numComplete / source.num_rays;
+    waitbar(fractionComplete, hWaitBar);
+%     path = path(1:step-1,:);
     
 end
 end

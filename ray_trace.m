@@ -95,8 +95,8 @@ arrayfun(@trace_ray,1:source.num_rays);
                                 v = vNew;
                                 v0 = iP;
                                 source.v(ray_index,:) = vNew;
-                                if volume.surf_absorbing(current_surface)
-                                    source.step_absVol(ray_index,source.steps(ray_index)) = current_surface;
+                                if volume.surf_absorbing(source.steps(ray_index))
+                                    source.step_absVol(ray_index,source.steps(ray_index)) = source.steps(ray_index);
                                 end
                                 source.steps(ray_index) = source.steps(ray_index) + 1;
                                 source.path_x(ray_index,source.steps(ray_index)) = iP(1);
