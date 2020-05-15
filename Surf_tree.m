@@ -39,6 +39,8 @@ classdef Surf_tree < handle
         temp_tri_face_index;
         
         refract_order;
+        surf_absorbing;
+%         surface_absorbing
     end
     
     methods
@@ -293,6 +295,9 @@ classdef Surf_tree < handle
             end
         end
         function plot_surface(this,surface)
+            figure(1)
+            hold on
+            axis equal
             n = surface;
             if isequal(surface,'all')
                 n = 1:this.surf_nums;

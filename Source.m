@@ -18,6 +18,8 @@ classdef Source < handle
         v0;         % (nx3xm) path of ray. m = number of stepps. sett to a hig number to avoid reconstructing matrix
         steps;      % (nxm) number of steps taken. starts att 1
         absorption  % (nx3xm) m = number of steps.
+%         abs_vol     % Indicies of the absorption volumes (if any).
+        step_absVol    % indicies for the absorbation volume at each step index. ex [0 0 1 1] for volume 1 at step 3 and  4
         refract_index;    % current refractive index of each ray.
         status;
         ray_alive;
@@ -72,6 +74,7 @@ classdef Source < handle
                     this.path_x(i) = tP(i,1);
                     this.path_y(i) = tP(i,2);
                     this.path_z(i) = tP(i,3);
+                    this.step_absVol = zeros(this.num_rays,5);
                 end
             end
         end

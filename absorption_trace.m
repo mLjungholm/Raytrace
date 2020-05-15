@@ -8,33 +8,52 @@
 % "tmin" is only determined for outside rays. I think this might be fixed
 % by just set "tmin = 0" if inside.
 
-function absorption_values = trace_retina(receptor_volume,source, abs_coeff, volume_id)
+function absorption_trace(receptor_volume,source)
+% function absorption_values = trace_retina(receptor_volume,source)
 % Function for tracing the absorption in volume with volume_id. 
 
 % ! This function assumes that each ray only passes through a absorption
 % volume once !
 
 % Determine the bounding volume of the receptor grid.
-boundingBox = [(receptor_volume.boxMin-receptor_volume.stepSize./2) (receptor_volume.boxMax+receptor_volume.stepSize./2)];
+boundingBox = [(receptor_volume.box_min-receptor_volume.step_size./2), (receptor_volume.box_max+receptor_volume.step_size./2)];
+boxN = receptor_volume.volume_resolution;
 boxSize = [boundingBox(4)-boundingBox(1),boundingBox(5)-boundingBox(2),boundingBox(6)-boundingBox(3)];
-boxN = round(((receptor_volume.boxMax-receptor_volume.boxMin)+receptor_volume.stepSize)./receptor_volume.stepSize);
+% boxN = round(((receptor_volume.box_max-receptor_volume.box_min)+receptor_volume.step_size)./receptor_volume.step_size);
 
 % Create a zero array for the absorption values of the receptors
-absorption_values = zeros(receptor_volume.receptor_nums,1);
+% absorption_values = zeros(receptor_volume.receptor_nums,1);
 
-% Trace the ray absorption for all rays in parallel
+% hWaitBar = waitbar(0, 'Fitting retina Volume', 'CreateCancelBtn', ...
+%     @(src, event) setappdata(gcbf(), 'Cancelled', true));
+% setappdata(hWaitBar, 'Cancelled', false);
+% numComplete = 0;
+
+
 arrayfun(@voxel_trace,1:source.num_rays);
+% try
+%     % Trace the ray absorption for all rays in parallel
+%     arrayfun(@voxel_trace,1:source.num_rays);
+% catch
+%     delete(hWaitBar);
+%     error('unexpected error in absorption calculation')
+% end
+% delete(hWaitBar);
+
+
 
 function voxel_trace(ray_ind)
     % Detrmine if the ray traces through the abosption volume in question. 
-    if ~ismember(source.absorption(ray_ind,:),volume_id)
+    if ~ismember(source.step_absVol(ray_ind,:),receptor_volume.volume_id)
         return;
     end
     
     % Find the staring position of the ray. In current version we asume
     % that the ray starts att the second last position.
+    ray_steps = find(source.step_absVol(ray_ind,:) == receptor_volume.volume_id,1);
+%     ray_steps = source.abs_path(ray_ind-1)
     
-    start = [source.path_x(ray_ind,source.steps(ray_ind-1)),source.path_y(ray_ind,source.steps(ray_ind-1)),source.path_z(ray_ind,source.steps(ray_ind-1))];
+    start = [source.path_x(ray_ind,ray_steps),source.path_y(ray_ind,ray_steps),source.path_z(ray_ind,ray_steps)];
     % Determine if ray starts outside or inside the voxel grid
     if start(1) < boundingBox(1) || start(1) > boundingBox(4)
         outside = 1;
@@ -48,13 +67,15 @@ function voxel_trace(ray_ind)
     dir = source.v(ray_ind,:);
     
     % If outside then find first intersection point
-    tmin = 0;
+    
     if outside
         [tmin, flag] = rayBoxGPU(boundingBox,start, dir);
         if ~flag
             return
         end
         start = start + tmin*dir;
+    else
+        tmin = 0;
     end
     
     % This determines the volume x,y,z (voxel) indices that the ray starts
@@ -134,7 +155,7 @@ function voxel_trace(ray_ind)
     tDeltaZ = voxelSizeZ/abs(dir(3));
     
     % Create a max step fail check
-    maxStep = (max(boxN))^2;
+%     maxStep = (max(boxN))^2;  % Max step not used.
     step = 1;
     I = 1;
     
@@ -145,11 +166,15 @@ function voxel_trace(ray_ind)
         %     path(step,3) = z;
         
         % Fist check if the current indices has any receptors linked to it.
-        if point_inds(x,y,z) ~= 0
-            In = exp(-step*abs_coeff);
+        if ~isempty(receptor_volume.receptor_grid{y,x,z})
+            In = exp(-step*receptor_volume.absorption_coeff);
             absVal = I - In;
             I = In;
-%             absorption_values(nonzeros(receptors_inds(point_inds(x,y,z),:))) = absorption_values(nonzeros(receptors_inds(point_inds(x,y,z),:))) + absVal;
+            rec_inds = receptor_volume.receptor_grid{y,x,z};
+            for ind = 1:size(rec_inds,2)
+                receptor_volume.absorbed_val(rec_inds(ind)) = receptor_volume.absorbed_val(rec_inds(ind)) + absVal;
+%                 receptor_volume.absorbed_val(receptor_volume.receptor_grid{y,x,z}(rec_num)) = receptor_volume.absorbed_val(receptor_volume.receptor_grid{y,x,z}(rec_num)) + absVal;
+            end
             step = step + 1;
         end
         
@@ -172,6 +197,11 @@ function voxel_trace(ray_ind)
         end
         %     step = step+1;
     end
+    
+    % Uppdate the waitbar
+%                 numComplete = numComplete + 1;
+%                 fractionComplete = numComplete / source.num_rays;
+%                 waitbar(fractionComplete, hWaitBar);
     % path = path(1:step-1,:);
     
 end

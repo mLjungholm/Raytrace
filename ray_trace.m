@@ -26,6 +26,7 @@ arrayfun(@trace_ray,1:source.num_rays);
 %         end
         % Start values for the ray.
         current_step = source.steps(ray_index);
+        current_surface = 0;
         v0 = [source.path_x(ray_index,current_step), source.path_y(ray_index,current_step), source.path_z(ray_index,current_step)];
         v = source.v(ray_index,:);
         triangle_intersect_bin = 0;
@@ -94,11 +95,15 @@ arrayfun(@trace_ray,1:source.num_rays);
                                 v = vNew;
                                 v0 = iP;
                                 source.v(ray_index,:) = vNew;
+                                if volume.surf_absorbing(current_surface)
+                                    source.step_absVol(ray_index,source.steps(ray_index)) = current_surface;
+                                end
                                 source.steps(ray_index) = source.steps(ray_index) + 1;
                                 source.path_x(ray_index,source.steps(ray_index)) = iP(1);
                                 source.path_y(ray_index,source.steps(ray_index)) = iP(2);
                                 source.path_z(ray_index,source.steps(ray_index)) = iP(3);
                                 triangle_intersect_bin = current_bin;
+                                
                                 if isequal(intersect_flag, 'blocked')
                                     source.ray_alive(ray_index) = 0;
                                     source.status(ray_index) = 'Ray ended';
@@ -224,6 +229,7 @@ arrayfun(@trace_ray,1:source.num_rays);
             iP = closestIp;
             if intersection == 1
                 if volume.face_surf_index(volume.bin_triangles(triNum,current_bin)) == volume.refract_order(source.steps(ray_index))
+                    current_surface = volume.face_surf_index(volume.bin_triangles(triNum,current_bin));
                     if volume.surface_blocking(source.steps(ray_index)) == 0
                         [vNew, ~] = Snell(v, triN, source.refract_index(ray_index), volume.surf_refract_index(source.steps(ray_index)));
                         source.refract_index(ray_index) = volume.surf_refract_index(source.steps(ray_index));

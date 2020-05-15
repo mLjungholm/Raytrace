@@ -23,7 +23,7 @@ classdef Receptor_space < handle
         volume_resolution   % The number of steps in the receptor grid
         volume_id           % What volume id is acosiated with the retina.
         receptor_grid       % The 3D cell array where each indicies contains a list of the receptors contained in that voxel.
-        aborption_coeff     % Absorption coeficcent for the receptors
+        absorption_coeff     % Absorption coeficcent for the receptors
         absorbed_val        % Total absorbed value for each receptor
         x_grid              % X coordinates for the voxel centers
         y_grid              % Y coordinates for the voxel centers
@@ -48,7 +48,8 @@ classdef Receptor_space < handle
                     end
                     this.base_pos = varargin{1};
                     this.end_pos = varargin{2};
-                    this.receptor_nums = size(this.base_pos,1);                    
+                    this.receptor_nums = size(this.base_pos,1);
+                    this.absorbed_val = zeros(this.receptor_nums,1);
                     this.box_min = min([this.end_pos;this.base_pos],[],1);
                     this. box_max = max([this.end_pos;this.base_pos],[],1);
                     if ndims(varargin{3}) > 1
@@ -138,7 +139,8 @@ classdef Receptor_space < handle
                                     % This changes the size for the vectors
                                     % in the cell array. It might be slow.
                                     this.receptor_points{p_ind} = [this.receptor_points{p_ind}; point]; 
-                                    this.receptor_grid{end-y_ind+1,x_ind,z_ind} = [this.receptor_grid{end-y_ind+1,x_ind,z_ind} p_ind];
+                                    this.receptor_grid{y_ind,x_ind,z_ind} = [this.receptor_grid{y_ind,x_ind,z_ind} p_ind];
+%                                     this.receptor_grid{end-y_ind+1,x_ind,z_ind} = [this.receptor_grid{end-y_ind+1,x_ind,z_ind} p_ind];
                                     found_any = 1;
                                 end
                             end
@@ -168,7 +170,8 @@ classdef Receptor_space < handle
             for z_ind = 1:this.volume_resolution(3)
                 for y_ind = 1:this.volume_resolution(2)
                     for x_ind = 1:this.volume_resolution(1)
-                        if size(this.receptor_grid{end-y_ind+1,x_ind,z_ind},1) ~= 0
+                        if size(this.receptor_grid{y_ind,x_ind,z_ind},1) ~= 0
+%                         if size(this.receptor_grid{end-y_ind+1,x_ind,z_ind},1) ~= 0
                             not_empty(i,:) = [this.x_grid(x_ind),this.y_grid(y_ind),this.z_grid(z_ind)];
                             i = i + 1;
                         end
@@ -201,8 +204,10 @@ classdef Receptor_space < handle
             for zi = 1:this.volume_resolution(3)
                 for yi = 1:this.volume_resolution(2)
                     for xi = 1:this.volume_resolution(1)
-                        if ~size(this.receptor_grid{end-yi+1,xi,zi},1) == 0
-                            if any(this.receptor_grid{end-yi+1,xi,zi}(this.receptor_grid{end-yi+1,xi,zi} == conenr))
+                        if ~size(this.receptor_grid{yi,xi,zi},1) == 0
+%                         if ~size(this.receptor_grid{end-yi+1,xi,zi},1) == 0
+                            if any(this.receptor_grid{yi,xi,zi}(this.receptor_grid{yi,xi,zi} == conenr))
+%                             if any(this.receptor_grid{end-yi+1,xi,zi}(this.receptor_grid{end-yi+1,xi,zi} == conenr))
                                 found_points(i,:) = [this.x_grid(xi),this.y_grid(yi),this.z_grid(zi)];
                                 i = i + 1;
                             end

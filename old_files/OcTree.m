@@ -1,98 +1,43 @@
 classdef OcTree < handle
-% OcTree point decomposition in 3D
-%    OcTree is used to create a tree data structure of bins containing 3D
-%    points. Each bin may be recursively decomposed into 8 child bins.
-%
-%    OT = OcTree(PTS) creates an OcTree from an N-by-3 matrix of point
-%    coordinates.
-%
-%    OT = OcTree(...,'PropertyName',VALUE,...) takes any of the following
-%    property values:
-%
-%     binCapacity - Maximum number of points a bin may contain. If more
-%                   points exist, the bin will be recursively subdivided.
-%                   Defaults to ceil(numPts/10).
-%     maxDepth    - Maximum number of times a bin may be subdivided.
-%                   Defaults to INF.
-%     maxSize     - Maximum size of a bin edge. If any dimension of a bin 
-%                   exceeds maxSize, it will be recursively subdivided.
-%                   Defaults to INF.
-%     minSize     - Minimum size of a bin edge. Subdivision will stop after 
-%                   any dimension of a bin gets smaller than minSize.
-%                   Defaults to 1000*eps.
-%
-%    Example 1: Decompose 200 random points into bins of 20 points or less,
-%             then display each bin with its points in a separate colour.
-%        pts = (rand(200,3)-0.5).^2;
-%        OT = OcTree(pts,'binCapacity',20);        
-%        figure
-%        boxH = OT.plot;
-%        cols = lines(OT.BinCount);
-%        doplot3 = @(p,varargin)plot3(p(:,1),p(:,2),p(:,3),varargin{:});
-%        for i = 1:OT.BinCount
-%            set(boxH(i),'Color',cols(i,:),'LineWidth', 1+OT.BinDepths(i))
-%            doplot3(pts(OT.PointBins==i,:),'.','Color',cols(i,:))
-%        end
-%        axis image, view(3)
-%
-%
-%
-% OcTree methods:
-%     shrink            - Shrink each bin to tightly encompass its children
-%     query             - Ask which bins a new set of points belong to.
-%     plot, plot3       - Plots bin bounding boxes to the current axes.
-%
-% OcTree properties:
-%     Points            - The coordinate of points in the decomposition.
-%     PointBins         - Indices of the bin that each point belongs to.
-%     BinCount          - Total number of bins created.
-%     BinBoundaries     - BinCount-by-6 [MIN MAX] coordinates of bin edges.
-%     BinDepths         - The # of subdivisions to reach each bin.
-%     BinParents        - Indices of the bin that each bin belongs to.
-%     Properties        - Name/Val pairs used for creation (see help above)
-%     BinContent        - List of vetricis contained in each bin.
-%     BinTri            - List of trianlge faces contained in each bin.
-%     BinChilds         - List of child bins for each parent bin.
-%     BinPrim           - List of primitives for each parent bin. 
-
-
-% Possible additional info "BinContent" - idices of the points in each bin
-
-
-% See also qtdecomp.
-
-%   Created by Sven Holcombe.
-%   1.0     - 2013-03 Initial release
-%   1.1     - 2013-03 Added shrinking bins and allocate/deallocate space
-
-%   Modified by Mikael Ljungholm
-%   1.2     - 2016-04 Modified to encompas surface triangles.
-%   1.3     - 2016-05 VoxTree traversal algorithm added. 
-
+%   Space partition object for acellerated ray tracing. Object takes in
+%   points and triangle faces from sufaces and subpartition space fot them.
     
+%   Created by Mikael Ljungholm - 2016-04
+%   Point partition algorithm is based on original code by Sven Holcombe
+%   1.2     - 2016-04 Modified to encompas surface triangles.
+%   1.3     - 2016-05 VoxTree traversal algorithm added.
+%   1.4     - 2018-06 Added code for multiple surfaces/volumes
+
+
     properties
-        Points;
-        PointBins;
-        BinCount;
-        BinBoundaries;
-        BinDepths;
-        BinParents = zeros(0,1);
-        Properties;
-        BinContent; % [maxPoints x number of bins]
-        BinTri;
-        BinChilds; % 0-8st (nx8)
-        faces;
-        BinPrim;
-        refN = 0;
+        octree_properties;
+        
+        points;
+        point_surf_index;
+        point_bins;
+      
+        absorption_volumes;
+        volume_abs_coefficient;
+        volumes_total_absorption;
+        
+        bin_count;
+        bin_boundaries;
+        bin_depths;
+        bin_parents;
+        bin_childs;
+        
+        bin_absorption_volumes;
     end
     
     methods
-        
-        function this = OcTree(pts, varargin)
+        function this = OcTree(varargin)
             % This is the OcTree header line
-            validateattributes(pts,{'numeric'},...
-                {'real','finite','nonnan','ncols', 3},...
-                mfilename,'PTS')
+%             validateattributes(pts,{'numeric'},...
+%                 {'real','finite','nonnan','ncols', 3},...
+%                 mfilename,'PTS')
+
+            % Allow custom setting of Properties
+            
             
             % Initialise a single bin surrounding all given points
             numPts = size(pts,1);
@@ -103,14 +48,7 @@ classdef OcTree < handle
             this.BinParents(1) = 0; % Bin #1 hass no parent
             this.BinCount = 1;
             
-            % Allow custom setting of Properties
-            IP = inputParser;
-            IP.addParameter('binCapacity',ceil(numPts)/10);
-            IP.addParameter('maxDepth',inf);
-            IP.addParameter('maxSize',inf);
-            IP.addParameter('minSize',1000 * eps);
-            IP.parse(varargin{:});
-            this.Properties = IP.Results;
+
             
             % Return on empty or trivial bins
             if numPts<2, return; end
@@ -629,3 +567,62 @@ ray.v = v;
       end   
     end
 end
+
+
+%    OcTree is used to create a tree data structure of bins containing 3D
+%    points. Each bin may be recursively decomposed into 8 child bins.
+%
+%    OT = OcTree(PTS) creates an OcTree from an N-by-3 matrix of point
+%    coordinates.
+%
+%    OT = OcTree(...,'PropertyName',VALUE,...) takes any of the following
+%    property values:
+%
+%     binCapacity - Maximum number of points a bin may contain. If more
+%                   points exist, the bin will be recursively subdivided.
+%                   Defaults to ceil(numPts/10).
+%     maxDepth    - Maximum number of times a bin may be subdivided.
+%                   Defaults to INF.
+%     maxSize     - Maximum size of a bin edge. If any dimension of a bin 
+%                   exceeds maxSize, it will be recursively subdivided.
+%                   Defaults to INF.
+%     minSize     - Minimum size of a bin edge. Subdivision will stop after 
+%                   any dimension of a bin gets smaller than minSize.
+%                   Defaults to 1000*eps.
+%
+%    Example 1: Decompose 200 random points into bins of 20 points or less,
+%             then display each bin with its points in a separate colour.
+%        pts = (rand(200,3)-0.5).^2;
+%        OT = OcTree(pts,'binCapacity',20);        
+%        figure
+%        boxH = OT.plot;
+%        cols = lines(OT.BinCount);
+%        doplot3 = @(p,varargin)plot3(p(:,1),p(:,2),p(:,3),varargin{:});
+%        for i = 1:OT.BinCount
+%            set(boxH(i),'Color',cols(i,:),'LineWidth', 1+OT.BinDepths(i))
+%            doplot3(pts(OT.PointBins==i,:),'.','Color',cols(i,:))
+%        end
+%        axis image, view(3)
+%
+%
+%
+% OcTree methods:
+%     shrink            - Shrink each bin to tightly encompass its children
+%     query             - Ask which bins a new set of points belong to.
+%     plot, plot3       - Plots bin bounding boxes to the current axes.
+%
+% OcTree properties:
+%     Points            - The coordinate of points in the decomposition.
+%     PointBins         - Indices of the bin that each point belongs to.
+%     BinCount          - Total number of bins created.
+%     BinBoundaries     - BinCount-by-6 [MIN MAX] coordinates of bin edges.
+%     BinDepths         - The # of subdivisions to reach each bin.
+%     BinParents        - Indices of the bin that each bin belongs to.
+%     Properties        - Name/Val pairs used for creation (see help above)
+%     BinContent        - List of vetricis contained in each bin.
+%     BinTri            - List of trianlge faces contained in each bin.
+%     BinChilds         - List of child bins for each parent bin.
+%     BinPrim           - List of primitives for each parent bin. 
+
+
+% Possible additional info "BinContent" - idices of the points in each bin

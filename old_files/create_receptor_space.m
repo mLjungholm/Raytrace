@@ -1,3 +1,6 @@
+% This is the old file. This is replaced by the Receptor_volume class
+
+
 % script for creating the points used in the receptor_tree
 
 % Note! 

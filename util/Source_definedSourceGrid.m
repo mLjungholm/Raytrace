@@ -1,3 +1,6 @@
+% This is a special verion of the source class. It is used for determineing
+% where a cone in the retina will end at the lens.
+
 % The source contains arrays for all ray-values
 
 % The assumes max path =  10. If you know there will be more refractions

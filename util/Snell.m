@@ -17,7 +17,7 @@ r = n1/n2;
 
 vNew = r*v + (r*c - sqrt(1- r^2*(1-c^2)))*N;
 
-if isreal(vNew) == 1    % If vNew is imagenary then total internal reflection occured. 
+if isreal(vNew)  % If vNew is imagenary then total internal reflection occured. 
 %     vRefracted = vNew;
     reflected = false;
 else
