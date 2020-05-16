@@ -121,34 +121,59 @@ ray_trace_single(s,lens_tree);
 
 %% Test absorption
 
+% receptor_space.absorbed_val(:) = 0;
+% receptor_space.absorption_coeff = 0.0067;
+% receptor_space.volume_id = 3;
+% absorption_trace(receptor_space,s);
+% absVals = receptor_space.absorbed_val;
+% absVals = absVals./max(absVals);
+% [Az, El] = meshgrid(-pi:0.01:pi,-pi/2:0.01:pi/2);
+% % interpolate nonuniformly spaced points
+% [az,el,r] = cart2sph(receptor_space.base_pos(:,1),receptor_space.base_pos(:,2),receptor_space.base_pos(:,3));
+% C = griddata(az,el,absVals,Az,El);
+% R = griddata(az,el,r,Az,El);
+% C = C.*1000;
+% % convert to cart
+% [x, y, z] = sph2cart(Az,El,R);
+% % 
+% figure(1)
+% hold on
+% s.plot(1)
+% cornia.plot(1,'y')
+% lens.plot(1,'b')
+% retina.plot(1,'g')
+% % s.plot_stray(1,20)
+% % st.plot_surface('all')
+% % colormap(inferno)
+% % axis equal off vis3d
+% axis equal
+% surface(x,y,z,C,'edgealpha',0.05)
+
+%% Speed test trace.
+
+cornia_tree.surface_blocking = 1;
+cornia_tree.surf_refract_index = 1.4; % 1.4
+lens_tree.surf_refract_index = [0 1.44 1.36]; %1.36
+lens_tree.surface_blocking = [0 0 1];
+lens_tree.refract_order = [1 1 1];
+lens_tree.surf_absorbing = [0 0 1];
+
+start = [-100,0,0];
+dir = -start;
+s = Source(dir,start,60,11,1);
+tic
+ray_trace_single(s,cornia_tree);
+s.unblock;
+ray_trace_single(s,lens_tree);
+toc
+
+% s2 = Source(dir,start,60,25,1);
+% tic
+% ray_trace(s2,st);
+% toc
+tic
 receptor_space.absorbed_val(:) = 0;
 receptor_space.absorption_coeff = 0.0067;
 receptor_space.volume_id = 3;
 absorption_trace(receptor_space,s);
-absVals = receptor_space.absorbed_val;
-absVals = absVals./max(absVals);
-[Az, El] = meshgrid(-pi:0.01:pi,-pi/2:0.01:pi/2);
-% interpolate nonuniformly spaced points
-[az,el,r] = cart2sph(receptor_space.base_pos(:,1),receptor_space.base_pos(:,2),receptor_space.base_pos(:,3));
-C = griddata(az,el,absVals,Az,El);
-R = griddata(az,el,r,Az,El);
-C = C.*1000;
-% convert to cart
-[x, y, z] = sph2cart(Az,El,R);
-% 
-figure(1)
-hold on
-s.plot(1)
-cornia.plot(1,'y')
-lens.plot(1,'b')
-retina.plot(1,'g')
-% s.plot_stray(1,20)
-% st.plot_surface('all')
-% colormap(inferno)
-% axis equal off vis3d
-axis equal
-surface(x,y,z,C,'edgealpha',0.05)
-
-
-
-
+toc

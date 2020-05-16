@@ -23,6 +23,7 @@ classdef Source < handle
         refract_index;    % current refractive index of each ray.
         status;
         ray_alive;
+        source_id;
     end
     
     methods

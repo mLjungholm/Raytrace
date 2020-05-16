@@ -84,15 +84,15 @@ test_source.plot(1) % Plots the initial points for all rays.
 % points are in carteesian coordinates in the output variable "pc". d_theta
 % and d_phi is the resulted angular separation in horizontal and vertical
 % direction.
-ang = 20;
-radius = 30;
-half_sphere = 0;
+ang = 30;
+radius = 140;
+half_sphere = 1;
 plot_points = 1;
 [pc,d_theta,d_phi] = sphere_points_2d_angular(ang, radius, half_sphere ,plot_points);
 
-cornia_surface.plot(1,'r')
-lens_surface.plot(1,'b')
-retina_surface.plot(1,'g')
+cornia.plot(1,'r')
+lens.plot(1,'b')
+retina.plot(1,'g')
 
 %%
 % An easy way to sort only the needed points are for instance to create a
