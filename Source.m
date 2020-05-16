@@ -108,6 +108,14 @@ classdef Source < handle
                 plot3(temp_line(:,1),temp_line(:,2),temp_line(:,3),'r--')
             end
         end
+        function unblock(this)
+            for ray_ind = 1:this.num_rays
+                if isequal(this.status(ray_ind),'Ray ended')
+                    this.status(ray_ind) = 'refract';
+                    this.ray_alive(ray_ind) = 1;
+                end
+            end
+        end
         
     end
 end
