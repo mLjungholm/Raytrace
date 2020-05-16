@@ -16,15 +16,32 @@ oc_index(:,:,2) = [4 8; 3 7];
 % oc_index = [1 5; 2 6];
 % oc_index(:,:,2) = [3 7; 4 8];
 
+% Error_flag = 1;
+error_num = 0;
+err_bin_list = [];
+err_tri_list = [];
+
+
+
 % Run the ray-trace in paralell
 arrayfun(@trace_ray,1:source.num_rays);
 
+if error_num > 0
+    disp('bin list: ')
+    disp(err_bin_list)
+    disp('tri list: ')
+    disp(err_tri_list)
+end
     % Main ray trace for each ray
     function trace_ray(ray_index)
-%         if ray_index == 75
-%             disp("test")
-%         end
+        Error_flag = 0;
+        if ray_index == error_num
+            Error_flag = 1;
+%         else
+%             Error_falg = 0;
+        end
         % Start values for the ray.
+        
         current_step = source.steps(ray_index);
 %         current_surface = 0;
         v0 = [source.path_x(ray_index,current_step), source.path_y(ray_index,current_step), source.path_z(ray_index,current_step)];
@@ -74,6 +91,9 @@ arrayfun(@trace_ray,1:source.num_rays);
             jump_step = 0;
             run = 1;
             while run
+                if Error_flag
+                    err_bin_list = [err_bin_list; current_bin];
+                end
                 if missed == 1 || jump_step == 1
                     n = 3;
                     missed = 0;
@@ -198,6 +218,9 @@ arrayfun(@trace_ray,1:source.num_rays);
             % Creates a list of triangles in the current bin and checks for any
             % intersections. Calculate refraction if intersection is found.
             triList = nonzeros(volume.bin_triangles(:,current_bin));
+            if Error_flag == 1
+                err_tri_list = [err_tri_list; triList'];
+            end
             closest = inf;
             closestIp = 0;
             %         triNum = 0;

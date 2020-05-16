@@ -27,6 +27,11 @@ classdef Source < handle
     
     methods
         function this = Source(dir, origin, hsize, raysPerAxis, refract_index)
+            for i = 1:3
+                if dir(i) == 0
+                    dir(i) = 0;
+                end
+            end
             this.source_dir = dir./norm(dir);
             this.origin = origin;
             if raysPerAxis == 1
@@ -107,6 +112,13 @@ classdef Source < handle
                 temp_line(2,:) = temp_line(1,:) + this.v(i,:).*stray_length;
                 plot3(temp_line(:,1),temp_line(:,2),temp_line(:,3),'r--')
             end
+        end
+        function plot_single(this,raynr,stray_length)
+            figure(1)
+            hold on
+            temp_line(1,:) = [this.path_x(raynr,this.steps(raynr))',this.path_y(raynr,this.steps(raynr))',this.path_z(raynr,this.steps(raynr))'];
+            temp_line(2,:) = temp_line(1,:) + this.v(raynr,:).*stray_length;
+            plot3(temp_line(:,1),temp_line(:,2),temp_line(:,3),'r--')
         end
         function unblock(this)
             for ray_ind = 1:this.num_rays
