@@ -34,7 +34,7 @@ for source_num = 1:source_nums
     
     start = pc(source_num,:);
     dir = -start;
-    s = Source(dir,start,17, 15, 1);  % 114 size = 10000rays, s81=5022 rays. 
+    s = Source(dir,start,60,114,1);  % 114 size = 10000rays, s81=5022 rays. 
     s.source_id = source_num;
     
     % Raytracing
