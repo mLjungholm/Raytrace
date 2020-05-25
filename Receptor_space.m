@@ -113,10 +113,10 @@ classdef Receptor_space < handle
             try
                 arrayfun(@point_cone_fit, pcount);
             catch
-%                 delete(hWaitBar);
+                delete(hWaitBar);
                 error('unexpected error in fitting')
             end
-%             delete(hWaitBar);
+            delete(hWaitBar);
             this.unmatched_receptors = this.unmatched_receptors(any(this.unmatched_receptors,2));
             
             function point_cone_fit(p_ind)

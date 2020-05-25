@@ -13,7 +13,7 @@ receptor_nums = size(temp_var.s.absorption,1);
 absorption_mat = zeros(fileNums,receptor_nums);
 source_coords = zeros(fileNums,3);
 file_id = zeros(fileNums,1);
-file_name = cell(fileNums,1);
+% file_name = cell(fileNums,1);
 
 h = waitbar(0,'Initializing waitbar...');
 perc = 0;

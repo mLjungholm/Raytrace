@@ -84,7 +84,7 @@ test_source.plot(1) % Plots the initial points for all rays.
 % points are in carteesian coordinates in the output variable "pc". d_theta
 % and d_phi is the resulted angular separation in horizontal and vertical
 % direction.
-ang = 5;
+ang = 2;
 radius = 140;
 half_sphere = 1;
 plot_points = 1;
