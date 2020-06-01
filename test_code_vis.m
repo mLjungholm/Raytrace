@@ -1,4 +1,43 @@
 
+close all
+[Az, El] = meshgrid(-pi:0.01:pi,-pi/2:0.01:pi/2);
+
+r = ones(absR.receptor_nums,1)*120; 
+R = griddata(absR.view_dir(:,1)./180*pi,absR.view_dir(:,2)./180*pi,r,Az,El);
+C = griddata(absR.view_dir(:,1)./180*pi,absR.view_dir(:,2)./180*pi,absR.horizontal_Cf,Az,El);
+
+v = 0.015:0.01:0.15;
+C2 = getContour(C,v);
+
+% % convert to cart
+[x, y, z] = sph2cart(Az,El,R);
+figure(1)
+hold on
+% colormap(viridis)
+% colormap(inferno)
+axis equal off vis3d
+surface(-x,y,z,C2,'edgealpha',0.05)
+% cornia.plot(1,'y');
+% lens.plot(1,'b');
+% retina.plot(1,'g')
+
+
+function outMat = getContour(matIn, scale_in)
+[yi,xi] = size(matIn);
+outMat = zeros(yi,xi);
+for y_ind = 1:yi
+    for x_ind = 1:xi
+        if ~isnan(matIn(y_ind,x_ind))
+            t = scale_in - matIn(y_ind,x_ind);
+            [~,I] = min(abs(t));
+            outMat(y_ind,x_ind) = scale_in(I);
+        end
+    end
+end
+end
+
+
+%%
 % absorption_results = create_absorption_matrix();
 % [filename, path] = uigetfile('*','MultiSelect','on');
 % fileNums = size(filename,2);
@@ -25,32 +64,32 @@
 
 
 
-receptor_id = 1064;
-% 
-close all
-[Az, El] = meshgrid(-90:1:90,-90:1:90);
-[az,el,~] = cart2sph(-absR.source_coords(:,1),absR.source_coords(:,2),absR.source_coords(:,3));
-az = az.*180/pi;
-el = el.*180/pi;
-% ind2angle = @(matInd,matSize) (matInd/matSize)*180-90;
-% C = griddata(az,el,absR.absorption_mat(:,receptor_id),Az,El);
+% receptor_id = 1064;
+% % 
+% close all
+% [Az, El] = meshgrid(-90:1:90,-90:1:90);
+% [az,el,~] = cart2sph(-absR.source_coords(:,1),absR.source_coords(:,2),absR.source_coords(:,3));
+% az = az.*180/pi;
+% el = el.*180/pi;
+% % ind2angle = @(matInd,matSize) (matInd/matSize)*180-90;
+% % C = griddata(az,el,absR.absorption_mat(:,receptor_id),Az,El);
+% % C(isnan(C)) = 0;
+% % figure(1)
+% % cM = find_centroid(C,0.5,0);
+% % angs = [ind2angle(cM(1),181),ind2angle(cM(2),181)];
+% % figure(2)
+% % imagesc(flipud(C))
+% ind2angle = @(matInd,matSize) (matInd/matSize)*180-90; 
+% absR.horizontal_Cf = zeros(absR.receptor_nums,1);
+% absR.view_dir = zeros(absR.receptor_nums,2);
+% for r_ind = 1:absR.receptor_nums 
+% % interpolate nonuniformly spaced points
+% C = griddata(az,el,absR.absorption_mat(:,r_ind),Az,El);
 % C(isnan(C)) = 0;
-% figure(1)
 % cM = find_centroid(C,0.5,0);
-% angs = [ind2angle(cM(1),181),ind2angle(cM(2),181)];
-% figure(2)
-% imagesc(flipud(C))
-ind2angle = @(matInd,matSize) (matInd/matSize)*180-90; 
-absR.horizontal_Cf = zeros(absR.receptor_nums,1);
-absR.view_dir = zeros(absR.receptor_nums,2);
-for r_ind = 1:absR.receptor_nums 
-% interpolate nonuniformly spaced points
-C = griddata(az,el,absR.absorption_mat(:,r_ind),Az,El);
-C(isnan(C)) = 0;
-cM = find_centroid(C,0.5,0);
-absR.view_dir(r_ind,:) = [ind2angle(cM(1),181),ind2angle(cM(2),181)];
-absR.horizontal_Cf(r_ind) = CalculateCutoffFrequency(C,0,0);
-end
+% absR.view_dir(r_ind,:) = [ind2angle(cM(1),181),ind2angle(cM(2),181)];
+% absR.horizontal_Cf(r_ind) = CalculateCutoffFrequency(C,0,0);
+% end
 
 
 
