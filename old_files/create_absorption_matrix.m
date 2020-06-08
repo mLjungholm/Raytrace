@@ -4,6 +4,11 @@
 % if for some reason the source object in the saved file was not named 's'
 % then this needs to be changed in the code.
 
+
+%              ! NOTE !
+%       This function has shifted to be part of the Absorption result class
+%       the function is still avalible separetly in the old_files folder
+
 function absorption_results = create_absorption_matrix()
 [filename, path] = uigetfile('*','MultiSelect','on');
 fileNums = size(filename,2);

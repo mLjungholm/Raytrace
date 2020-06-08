@@ -7,7 +7,7 @@ cf = 0;
 I = projactedImage;
 I(isnan(I)) = 0; % Fill all empty spots with zero
 
-if direction == 1
+if isequal(direction, 'v')
     I = imrotate(I,90);
 end
 

@@ -81,13 +81,13 @@ ray_trace_single(s,lens_tree);
 % oP = retina.v;
 % key = oP(:,1) > 40;
 % oP = oP(key,:);
-% retina_source = Source_definedSourceGrid(oP, 1, [0,0,0]);
-% lens_tree.surf_refract_index = 1;
-% lens_tree.surface_blocking = 1;
-% lens_tree.refract_order = 1;
-% lens_tree.surf_absorbing = 0;
-% ray_trace_single(retina_source,lens_tree);
-% mP = retina_source.export_endpoints;
+retina_source = Source_definedSourceGrid(oP, 1, [0,0,0]);
+lens_tree.surf_refract_index = 1;
+lens_tree.surface_blocking = 1;
+lens_tree.refract_order = 1;
+lens_tree.surf_absorbing = 0;
+ray_trace_single(retina_source,lens_tree);
+mP = retina_source.export_endpoints;
 
 % figure(1)
 % retina.plot(1,'g')
@@ -111,9 +111,9 @@ ray_trace_single(s,lens_tree);
 
 %% Create retina space
 
-% receptor_space = Receptor_space(oP,mP,[4.7,0.7]);
-% receptor_space.allocate_space([100,100,100]);
-% receptor_space.fit_receptors2bins;
+receptor_space = Receptor_space(oP,mP,[4.7,0.7]);
+receptor_space.allocate_space([200,200,200]);
+receptor_space.fit_receptors2bins;
 % figure(1)
 % retina.plot(1,'g')
 % lens.plot(1,'b')
@@ -125,29 +125,29 @@ ray_trace_single(s,lens_tree);
 % receptor_space.absorption_coeff = 0.0067;
 % receptor_space.volume_id = 3;
 % absorption_trace(receptor_space,s);
-% absVals = receptor_space.absorbed_val;
-% absVals = absVals./max(absVals);
-% [Az, El] = meshgrid(-pi:0.01:pi,-pi/2:0.01:pi/2);
-% % interpolate nonuniformly spaced points
-% [az,el,r] = cart2sph(receptor_space.base_pos(:,1),receptor_space.base_pos(:,2),receptor_space.base_pos(:,3));
-% C = griddata(az,el,absVals,Az,El);
-% R = griddata(az,el,r,Az,El);
-% C = C.*1000;
-% % convert to cart
-% [x, y, z] = sph2cart(Az,El,R);
-% % 
-% figure(1)
-% hold on
-% s.plot(1)
-% cornia.plot(1,'y')
-% lens.plot(1,'b')
-% retina.plot(1,'g')
-% % s.plot_stray(1,20)
-% % st.plot_surface('all')
-% % colormap(inferno)
-% % axis equal off vis3d
-% axis equal
-% surface(x,y,z,C,'edgealpha',0.05)
+absVals = receptor_space.absorbed_val;
+absVals = absVals./max(absVals);
+[Az, El] = meshgrid(-pi:0.01:pi,-pi/2:0.01:pi/2);
+% interpolate nonuniformly spaced points
+[az,el,r] = cart2sph(receptor_space.base_pos(:,1),receptor_space.base_pos(:,2),receptor_space.base_pos(:,3));
+C = griddata(az,el,absVals,Az,El);
+R = griddata(az,el,r,Az,El);
+C = C.*1000;
+% convert to cart
+[x, y, z] = sph2cart(Az,El,R);
+% 
+figure(1)
+hold on
+s.plot(1)
+cornia.plot(1,'y')
+lens.plot(1,'b')
+retina.plot(1,'g')
+% s.plot_stray(1,20)
+% st.plot_surface('all')
+% colormap(inferno)
+% axis equal off vis3d
+axis equal
+surface(x,y,z,C,'edgealpha',0.05)
 
 %% Speed test trace.
 
