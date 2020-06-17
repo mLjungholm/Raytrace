@@ -1,6 +1,7 @@
 function [yi,xi] = sph2pixel(sphCord,imSize, diam)
 % First find the angle theta betwen the vector OP and y-axis
 
+
 [xp,yp,zp] = sph2cart(sphCord(1), sphCord(2),1);
 % OP = [xp,yp,zp];
 theta = acosd(dot([xp,yp,zp],[1,0,0]));
@@ -15,7 +16,7 @@ if yp == 0 && zp == 0
     delta = 0;
 else
 % delta = acos(dot([0,yp,zp],[xp,yp,0])/(norm([0,yp,zp])*norm([xp,yp,0])));
-delta = acos(dot([yp,zp],[1,0])/norm([yp,zp]));
+delta = acos(dot([zp,yp],[0,1])/norm([yp,zp]));
 end
 
 xs = ri*cos(delta);
@@ -36,7 +37,7 @@ end
 
 xi = round(center(2)+xs);
 if sphCord(2) > 0
-    yi = round(center(1)-ys);
+    yi = round(center(1)-ys); % Becaus lower pixel index means higher upp in the image
 else
     yi = round(center(1)+ys);
 end
