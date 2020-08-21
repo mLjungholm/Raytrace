@@ -58,6 +58,7 @@
 % cornia_surface = Surf_obj;
 % lens_surface = Surf_obj;
 % retina_surface = Surf_obj;
+% pigment = Surf_obj;
 % ------------------------------------------------------------
 
 
@@ -65,23 +66,45 @@
 
 % Example
 % ------------------------------------------------------------
-% cornia_surface.plot(1,'r')
+% cornia2.plot(1,'r')
 % lens_surface.plot(1,'b')
 % retina_surface.plot(1,'g')
+% pigment.plot(1,'k')
 
-% cornia_surface.rotate('x', [0 0 0], 180) % 90 degree rotation around the x axis at position [0 0 0]
+% v = [-213, -173,0];
+% cornia2.move(v);
+% 
+% cornia2.plot(1,'r')
+% lens_surface.plot(1,'b')
+% retina_surface.plot(1,'g')
+% pigment.plot(1,'k')
+
+% lens_surface.move(v);
+% retina_surface.move(v)
+% pigment.move(v);
+% cornia2.rotate('x', [0 0 0], 180) % 90 degree rotation around the x axis at position [0 0 0]
 % lens_surface.rotate('x', [0 0 0], 180)
 % retina_surface.rotate('x', [0 0 0], 180)
 % 
-% cornia_surface.plot(1,'r')
+% cornia2.plot(1,'r')
 % lens_surface.plot(1,'b')
 % retina_surface.plot(1,'g')
+% pigment.plot(1,'k')
 % ------------------------------------------------------------
 
 %% Step 3. Create the surface partition
 
 % Example
 %------------------------------------------------------------------------
+cornia = Surf_tree(cornia2);
+lens = Surf_tree(lens_surface);
+retina = Surf_tree(retina_surface);
+
+% trisurf(cornia2.f,cornia2.v(:,1),cornia2.v(:,2),cornia2.v(:,3),'Facecolor','b','FaceAlpha',0.2,'EdgeAlpha',0.1)
+% trisurf(lens_surface.f,lens_surface.v(:,1),lens_surface.v(:,2),lens_surface.v(:,3),'Facecolor','b','FaceAlpha',0.3,'EdgeAlpha',0.1)
+% trisurf(retina_surface.f,retina_surface.v(:,1),retina_surface.v(:,2),retina_surface.v(:,3),'Facecolor','y','FaceAlpha',0.1,'EdgeAlpha',0.1)
+% trisurf(pigment.f,pigment.v(:,1),pigment.v(:,2),pigment.v(:,3),'Facecolor','w','FaceAlpha',0.1,'EdgeAlpha',0.1)
+
 % surf_tree = Surf_tree(cornia_surface, lens_surface, retina_surface);
 % surf_tree.surf_refract_index = [1.35 1.4 1.37]; % Refractive index of the surfaces in the order they where entered.
 % surf_tree.surface_blocking = [0 0 1]; % Last surface (retina in this case) is set to be a blocking surface.

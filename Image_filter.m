@@ -11,9 +11,9 @@ classdef Image_filter < handle
         receptor_nums
         weights
         down_supersampling
-        receptor_view_center
-        diamMod = 1.3423e+03/1080;
-%         diamMod = (3937-48)/4032;
+        receptor_view_center % loumn1:y-coord, column2: x-coord.
+%         diamMod = 1.3423e+03/1080;
+        diamMod = (3937-48)/4032;
     end
 
 %                 iSizeOr = 4032;
@@ -140,7 +140,7 @@ classdef Image_filter < handle
             
             % Creating edge filter
             theshold_val = 0.1;
-            this.edge_filter = griddata(this.coord_transfer_mat(:,1),this.coord_transfer_mat(:,2),absorption_results.total_abs,y_grid,x_grid);
+            this.edge_filter = griddata(this.coord_transfer_mat(:,1),this.coord_transfer_mat(:,2),absorption_results.total_abs,x_grid,y_grid);
             this.edge_filter = this.edge_filter./max(max(this.edge_filter));
             this.edge_filter(isnan(this.edge_filter)) = 0;
             this.edge_filter(this.edge_filter > theshold_val) = 1;        
@@ -150,10 +150,10 @@ classdef Image_filter < handle
             [filename, path] = uigetfile('*');
             filePath = strcat(path,filename);
             I = imread(filePath);
-            I = rgb2gray(I);   % Transform into gray-scale.
+%             I = rgb2gray(I);   % Transform into gray-scale.
             % %
-            B=I;
-            B = B(35:4792,:);
+%             B=I;
+            B = input_image(35:4792,:);
             B = B(:,745:5503);
             C = imresize(B,[this.image_size, this.image_size]);
             C = im2single(C);
@@ -172,9 +172,9 @@ classdef Image_filter < handle
         end
         
         function filter_image(this, input_image)
-            I = rgb2gray(input_image);   % Transform into gray-scale.
-            B=I;
-            B = B(35:4792,:);
+%             I = rgb2gray(input_image);   % Transform into gray-scale.
+%             B=I;
+            B = input_image(35:4792,:);
             B = B(:,745:5503);
             C = imresize(B,[this.image_size, this.image_size]);
             CI = im2single(C);
@@ -191,6 +191,34 @@ classdef Image_filter < handle
             figure(1)
             imshow(comp_im)
             % imwrite(im3,strcat(filePath(1:end-4),'_Filtered.tif'));            
+        end
+        
+        function filter_image_with_markings(this, input_image, angles)
+%             I = rgb2gray(input_image);   % Transform into gray-scale.
+%             B=I;
+%             B = input_image(35:4792,:); % this is for cropping Dans images att 90deg limit
+%             B = B(:,745:5503);
+%             C = imresize(B,[this.image_size, this.image_size]);
+            C = input_image;
+            CI = im2single(C);
+            filtered_I = zeros(this.image_size, this.image_size); % Empty image
+            for receptor_ind = 1:this.receptor_nums
+                tempIm = CI.*this.filter_mat(:,:,receptor_ind); % runt the filter for each receptor over the input image
+                imVal = sum(sum(tempIm));   % Sum the absorbed value for the receptor
+                filtered_I(this.voronoi_map == receptor_ind) = imVal; % Add the summed value to the corresponding voronoi cell.               
+            end
+            % .*this.luminosity_filter.*this.edge_filter
+            filtered_I = filtered_I./(max(max(filtered_I)))*255;
+            filtered_I = uint8(filtered_I.*this.edge_filter.*this.luminosity_filter);
+            [forward_py, forward_px] = sph2pixel(angles,[256,256],this.diamMod*this.image_size);
+            edge_I = uint8(zeros(this.image_size,this.image_size));
+            edge_I(edge(this.edge_filter)) = 256;
+            filtered_I = insertMarker(filtered_I,[forward_px, forward_py],'o','color','r','size',5);
+            C = insertMarker(C,[forward_px, forward_py],'o','color','r','size',5);
+            C(:,:,1) = C(:,:,1) + edge_I;
+            comp_im = [C, uint8(zeros(256,20,3)), filtered_I];
+            figure(1)
+            imshow(comp_im)
         end
         
         function filter_stimmuli(this)
@@ -223,6 +251,15 @@ classdef Image_filter < handle
             comp_im = [I1, I2];
             figure(1)
             imagesc(comp_im)
+        end
+        
+        function recalc_edge_filter(this, absorption_results)
+%             theshold_val = 0.1;
+            [y_grid,x_grid] = meshgrid(1:this.image_size, 1:this.image_size);
+            this.edge_filter = griddata(this.coord_transfer_mat(:,1),this.coord_transfer_mat(:,2),absorption_results.total_abs,x_grid,y_grid);
+            this.edge_filter = this.edge_filter./max(max(this.edge_filter));
+            this.edge_filter(isnan(this.edge_filter)) = 0;
+%             this.edge_filter(this.edge_filter > theshold_val) = 1;  
         end
         
 %         function filter_video(this,input_video)

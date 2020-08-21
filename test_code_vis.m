@@ -6,8 +6,8 @@ r = ones(absR.receptor_nums,1)*120;
 R = griddata(absR.view_dir(:,1)./180*pi,absR.view_dir(:,2)./180*pi,r,Az,El);
 C = griddata(absR.view_dir(:,1)./180*pi,absR.view_dir(:,2)./180*pi,absR.horizontal_Cf,Az,El);
 
-v = 0.015:0.01:0.15;
-C2 = getContour(C,v);
+% v = 0.015:0.01:0.15;
+% C2 = getContour(C,v);
 
 % % convert to cart
 [x, y, z] = sph2cart(Az,El,R);
@@ -16,7 +16,7 @@ hold on
 % colormap(viridis)
 % colormap(inferno)
 axis equal off vis3d
-surface(-x,y,z,C2,'edgealpha',0.05)
+surface(-x,y,z,C,'edgealpha',0.05)
 % cornia.plot(1,'y');
 % lens.plot(1,'b');
 % retina.plot(1,'g')

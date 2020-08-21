@@ -65,6 +65,13 @@ classdef Surf_obj < handle
             trisurf(this.f,this.v(:,1),this.v(:,2),this.v(:,3),'Facecolor',color,'FaceAlpha',0.1,'EdgeAlpha',0.3)
             axis equal
         end
+        function plot_val(this,figureNr,val)
+            figure(figureNr)
+            hold on
+            axis equal
+            trisurf(this.f,this.v(:,1),this.v(:,2),this.v(:,3),ones(size(this.f,1),1).*val,'FaceAlpha',0.3,'EdgeAlpha',0.2)
+            axis equal
+        end
         function plot_centers(this, figureNr)
             figure(figureNr)
             plot3(this.centroid(1),this.centroid(2),this.centroid(3),'ro')

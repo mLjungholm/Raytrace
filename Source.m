@@ -129,6 +129,15 @@ classdef Source < handle
                 end
             end
         end
+        function plot_spec(this, figureNr, color, linewidth)
+            figure(figureNr)
+            hold on
+            axis equal
+            for i = 1:this.num_rays
+                temp_line = [this.path_x(i,1:this.steps(i))',this.path_y(i,1:this.steps(i))',this.path_z(i,1:this.steps(i))'];
+                plot3(temp_line(:,1),temp_line(:,2),temp_line(:,3),color,'linewidth',linewidth)
+            end
+        end
         
     end
 end

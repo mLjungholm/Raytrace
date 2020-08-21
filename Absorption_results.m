@@ -28,6 +28,7 @@ classdef Absorption_results < handle
             this.absorption_mat = zeros(fileNums,this.receptor_nums);
             this.source_coords = zeros(fileNums,3);
             this.file_ids = zeros(fileNums,1);
+            this.source_nums = fileNums;
 
             h = waitbar(0,'Initializing waitbar...');
             perc = 0;
@@ -52,7 +53,7 @@ classdef Absorption_results < handle
         function calculate_cutoff_frequency(this)
             h = waitbar(0,'Calculating cutoff frequencies...');
             perc = 0;
-            step = 100/fileNums;
+            step = 100/this.source_nums;
             
             [Az, El] = meshgrid(-90:1:90,-90:1:90);
             [az,el,~] = cart2sph(-this.source_coords(:,1),this.source_coords(:,2),this.source_coords(:,3));
@@ -84,16 +85,21 @@ classdef Absorption_results < handle
         end
         
         % Function for visiualization of the cut_off frequency in 3d
-        function visualize_cutoff(this,direction)
+        function visualize_cutoff(this,direction, scale, translate, opacity, surfaces)
             arguments
                 this
-                direction {mustBeMember(direction,{'v','h'})}
+                direction {mustBeMember(direction,{'v','h'})}              
+                scale = 1;
+                translate = 0;
+                opacity = 1;
+                surfaces = nan;
+                
             end
             if isempty(this.absorption_mat)
                 error('absorption matrix is emtpy')
             end
             [Az, El] = meshgrid(-pi:0.01:pi,-pi/2:0.01:pi/2);
-            r = ones(this.receptor_nums,1)*120;
+            r = ones(this.receptor_nums,1)*scale;
             R = griddata(this.view_dir(:,1)./180*pi,this.view_dir(:,2)./180*pi,r,Az,El);
             if isequal(direction,'h')
                 C = griddata(this.view_dir(:,1)./180*pi,this.view_dir(:,2)./180*pi,this.cF_horizontal,Az,El);
@@ -104,13 +110,21 @@ classdef Absorption_results < handle
             end
             v = 0.015:0.01:0.15;
             C2 = getContour(C,v);
-            [x, y, z] = sph2cart(Az,El,R);
+            [x, y, z] = sph2cart(Az,El,R);    
+            
             figure(1)
             hold on
             % colormap(viridis)
             % colormap(inferno)
             axis equal off vis3d
-            surface(-x,y,z,C2,'edgealpha',0.05)
+            surface(-x,y+translate,z,C2,'facealpha',opacity,'edgealpha',0.05)
+%             if ~isnan(surfaces)
+%                 maxval = max(max(C2));
+%                 step_val = linspace(0,maxval,size(surfaces,1)+1);
+%                 for surf_id = 1:size(surfaces,1)
+%                     surfaces(1).plot
+%                 end
+%             end
             function outMat = getContour(matIn, scale_in)
                 [yi,xi] = size(matIn);
                 outMat = zeros(yi,xi);
@@ -145,7 +159,52 @@ classdef Absorption_results < handle
             surface(-x,y,z,C,'edgealpha',0.05)
         end
         
-        % This is a supportfunction to create a 3d contour plot.
+        function single_receptor_profile(this, receptor_ind)
+            
+            [Az, El] = meshgrid(-90:1:90,-90:1:90);
+            [az,el,~] = cart2sph(-this.source_coords(:,1),this.source_coords(:,2),this.source_coords(:,3));
+            az = az.*180/pi;
+            el = el.*180/pi;
+            % % interpolate nonuniformly spaced points
+            
+            maxval = max(max(this.absorption_mat(:,receptor_ind)));
+            C = griddata(az,el,this.absorption_mat(:,receptor_ind)./maxval,Az,El);
+
+            figure(1)
+            colormap(inferno)
+            ax = axes();
+            ax.YDir = 'reverse';
+            ax.XLim = [-90,90];
+            ax.YLim = [-90,90];
+            imagesc(ax,C)
+            ax.YDir = 'reverse';
+            % imagesc(ax,C);
+        end
+        
+        function single_receptor_profile_spherical(this, receptor_inds)            
+            % % interpolate nonuniformly spaced points            
+            figure(1)
+%             colormap(inferno)            
+%             threshold = 0.05;
+            [Az, El] = meshgrid(-pi/2:0.01:pi/2,-pi/2:0.01:pi/2);
+            [az,el,~] = cart2sph(-this.source_coords(:,1),this.source_coords(:,2),this.source_coords(:,3));
+%             R = griddata(az,el,r,Az,El);
+               ct = zeros(this.source_nums,1);
+               for i = 1:size(receptor_inds,2)
+                   
+            maxval = max(max(this.absorption_mat(:,receptor_inds(i))));
+            ct = ct + this.absorption_mat(:,receptor_inds(i))./maxval;
+               end
+%             ct(ct<0.1) = nan;
+            C = griddata(az,el,ct,Az,El);
+            R = ones(size(C)).*100;
+%             C(C<threshold) = nan;
+            [x, y, z] = sph2cart(Az,El,R);
+%             colormap(inferno)
+%             axis equal off vis3d
+            s = surface(-x,y,z,C,'edgealpha',0.05);
+%             s = surface(-x,y,z,C);
+        end
         
     end
 end

@@ -134,8 +134,8 @@ classdef Receptor_space < handle
                                 ang = acosd(pvec(1)*cone_dir(p_ind,1) + pvec(2)*cone_dir(p_ind,2) + pvec(3)*cone_dir(p_ind,3));
                                 % Check if the intervector angle is inside
                                 % the cone apex angle.
-                                %  if  ang <= beta(i) && ang >= alpha(i)
-                                if  ang <= this.alpha(p_ind)
+                                 if  ang <= this.alpha(p_ind) && ang >= this.beta(p_ind)
+%                                 if  ang <= this.alpha(p_ind)
                                     % This changes the size for the vectors
                                     % in the cell array. It might be slow.
                                     this.receptor_points{p_ind} = [this.receptor_points{p_ind}; point]; 
