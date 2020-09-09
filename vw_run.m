@@ -111,16 +111,38 @@ s.plot_spec(1,'r',0.5)
 %%
 figure(1)
 hold on
-axis equal
+% axis equal
+axis equal off vis3d
 % 
 % cornia2.ScaleSurf(2);
 % lens_surface.ScaleSurf(2);
 % retina_surface.ScaleSurf(2);
 % pigment.ScaleSurf(2);
-trisurf(cornia2.f,cornia2.v(:,1),cornia2.v(:,2),cornia2.v(:,3),'Facecolor','b','FaceAlpha',0.2,'EdgeAlpha',0.1)
+trisurf(cornia_surface.f,cornia_surface.v(:,1),cornia_surface.v(:,2),cornia_surface.v(:,3),'Facecolor','b','FaceAlpha',0.2,'EdgeAlpha',0.3)
 trisurf(lens_surface.f,lens_surface.v(:,1),lens_surface.v(:,2),lens_surface.v(:,3),'Facecolor','b','FaceAlpha',0.3,'EdgeAlpha',0.1)
-trisurf(retina_surface.f,retina_surface.v(:,1),retina_surface.v(:,2),retina_surface.v(:,3),'Facecolor','y','FaceAlpha',0.1,'EdgeAlpha',0.1)
+trisurf(retina_surface.f,retina_surface.v(:,1),retina_surface.v(:,2),retina_surface.v(:,3),'Facecolor','y','FaceAlpha',0.1,'EdgeAlpha',0.2)
 trisurf(pigment.f,pigment.v(:,1),pigment.v(:,2),pigment.v(:,3),'Facecolor','w','FaceAlpha',0.1,'EdgeAlpha',0.1)
+
+quiver3(-50, 110, 0, -15, 0, 0,3, 'LineWidth',2, 'color','r')
+quiver3(-50, 110, 0, 0, 15, 0,3, 'LineWidth',2, 'color','k')
+quiver3(-50, 110, 0, 0, 0, -15,3, 'LineWidth',2, 'color','b')
+
+a = -pi : pi/2 : pi;                                % Define Corners
+ph = pi/4;                                          % Define Angular Orientation (‘Phase’)
+x = [cos(a+ph); cos(a+ph)]/cos(ph).*6 -56;
+y = [sin(a+ph); sin(a+ph)]/sin(ph).*6 +116;
+z = [-ones(size(a)); ones(size(a))].*6 -6;
+% figure
+surf(x, y, z, 'FaceColor','k', 'facealpha', 0.1)                      % Plot Cube
+% hold on
+% patch(x', y', z', 'k', 'facealpha)                              % Make Cube Appear Solid
+% hold off
+% axis([ -1  1    -1  1    -1  1]*1.5)
+% grid on
+receptor_space.plot_cone(1043,1,'r')
+receptor_space.plot_cone(1041,1,'r')
+receptor_space.plot_cone(1073,1,'r')
+
 
 %% Find receptor endpoints
 oP = retina_surface.v;

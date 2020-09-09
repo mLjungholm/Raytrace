@@ -201,6 +201,7 @@ classdef Image_filter < handle
 %             C = imresize(B,[this.image_size, this.image_size]);
             C = input_image;
             CI = im2single(C);
+%             disp(sum(sum(CI))/(256*256));
             filtered_I = zeros(this.image_size, this.image_size); % Empty image
             for receptor_ind = 1:this.receptor_nums
                 tempIm = CI.*this.filter_mat(:,:,receptor_ind); % runt the filter for each receptor over the input image
@@ -208,13 +209,20 @@ classdef Image_filter < handle
                 filtered_I(this.voronoi_map == receptor_ind) = imVal; % Add the summed value to the corresponding voronoi cell.               
             end
             % .*this.luminosity_filter.*this.edge_filter
-            filtered_I = filtered_I./(max(max(filtered_I)))*255;
-            filtered_I = uint8(filtered_I.*this.edge_filter.*this.luminosity_filter);
+%             filtered_I = filtered_I./(max(max(filtered_I)))*255;
+%             disp(max(max(filtered_I)));
+            filtered_I = filtered_I./3.8723e+05.*this.edge_filter.*this.luminosity_filter;
+%             filtered_I = filtered_I.*this.edge_filter;
+%             disp(max(max(filtered_I)))
+%             disp(sum(sum(filtered_I))/(256*256))
+            filtered_I = uint8(filtered_I.*255); %*this.luminosity_filter
+%             filtered_I = histeq(filtered_I);
+%             disp(sum(sum(filtered_I)));
             [forward_py, forward_px] = sph2pixel(angles,[256,256],this.diamMod*this.image_size);
             edge_I = uint8(zeros(this.image_size,this.image_size));
             edge_I(edge(this.edge_filter)) = 256;
-            filtered_I = insertMarker(filtered_I,[forward_px, forward_py],'o','color','r','size',5);
-            C = insertMarker(C,[forward_px, forward_py],'o','color','r','size',5);
+            filtered_I = insertMarker(filtered_I,[forward_px, forward_py],'+','color','r','size',5);
+            C = insertMarker(C,[forward_px, forward_py],'+','color','r','size',5);
             C(:,:,1) = C(:,:,1) + edge_I;
             comp_im = [C, uint8(zeros(256,20,3)), filtered_I];
             figure(1)

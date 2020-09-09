@@ -19,9 +19,9 @@ grid on
 
 %%
 % figure(1)
-a_in = 1/0.06;
+a_in = 1/0.11;
 [point_list, cycles_out] = sphere_points_hexagon(a_in, 1, 0, 'spherical');
-a_out = 1/cycles_out;
+a_out = 1/cycles_out
 % a_out_control = acosd(dot(point_list(1,:),point_list(2,:)));
 
 
@@ -37,13 +37,17 @@ a_out = 1/cycles_out;
 
 %%
 
-stimuli = create_stimuli_image('tophat', point_list, cycles_out, 256);
-filename = strcat('stimuli_images\tophat',num2str(a_out,'%.3f'),'.tiff');
-imwrite(stimuli,filename)
+stimuli1 = create_stimuli_image('tophat', point_list, cycles_out, 256);
+filename = strcat('C:\Users\Mikael\Dev\Ray_tracing\data\test_data\stimuli_images\tophat',num2str(a_out,'%.3f'),'.tiff');
+imwrite(stimuli1,filename)
+figure(1)
+imshow(stimuli1)
 
-stimuli = create_stimuli_image('cosine', point_list, cycles_out, 256);
-filename = strcat('stimuli_images\cosine',num2str(a_out,'%.3f'),'.tiff');
-imwrite(stimuli,filename)
+stimuli2 = create_stimuli_image('cosine', point_list, cycles_out, 256);
+figure(2)
+imshow(stimuli2)
+filename = strcat('C:\Users\Mikael\Dev\Ray_tracing\data\test_data\stimuli_images\cosine',num2str(a_out,'%.3f'),'.tiff');
+imwrite(stimuli2,filename)
 % figure(2)
 % % stimuli = imcomplement(stimuli);
 % imshow(stimuli)
